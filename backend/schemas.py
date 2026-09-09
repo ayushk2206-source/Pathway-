@@ -274,3 +274,20 @@ class SynapticScenarioRequest(BaseModel):
     dimension: int = 16
     decay: float = 0.05
     seed: int = 42
+
+
+class SynapticDiffRequest(BaseModel):
+    """POST /api/synaptic/diff — forensic before/after state delta comparison."""
+
+    step_a: int = 0
+    step_b: int = 1
+    experiment_id: Optional[str] = None
+
+
+class SynapticProtocolRequest(BaseModel):
+    """POST /api/synaptic/protocol — guided multi-step temporary memory demonstration."""
+
+    protocol_name: str = "temporary_memory"
+    dimension: int = 16
+    decay: float = 0.05
+    seed: int = 42

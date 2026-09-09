@@ -13,6 +13,9 @@ interface SynapticNetworkCanvasProps {
   layoutMode: 'bipartite' | 'radial' | 'matrix'
   showLabels?: boolean
   showAllSynapses?: boolean
+  diffResult?: import('../types').StateDiffResult | null
+  diffHighlightMode?: boolean
+  memoryTrailActiveSynapses?: string[]
 }
 
 export const SynapticNetworkCanvas: React.FC<SynapticNetworkCanvasProps> = ({
@@ -27,6 +30,9 @@ export const SynapticNetworkCanvas: React.FC<SynapticNetworkCanvasProps> = ({
   layoutMode,
   showLabels = true,
   showAllSynapses = true,
+  diffResult = null,
+  diffHighlightMode = false,
+  memoryTrailActiveSynapses = [],
 }) => {
   const [hoveredNeuronId, setHoveredNeuronId] = useState<string | null>(null)
   const [hoveredSynapseId, setHoveredSynapseId] = useState<string | null>(null)
@@ -268,7 +274,13 @@ export const SynapticNetworkCanvas: React.FC<SynapticNetworkCanvasProps> = ({
                 opacity = 0.95
               }
 
-              const strokeColor = isExcitatory
+              const isDiffHighlighted = diffHighlightMode && diffResult != null
+              const diffChange = isDiffHighlighted
+                ? diffResult?.top_changes.find((c) => c.synapse_id === syn.id) || null
+                : null
+              const isMemoryTrail = memoryTrailActiveSynapses.includes(syn.id)
+
+              let strokeColor = isExcitatory
                 ? isActive
                   ? '#38bdf8'
                   : 'rgba(56, 189, 248, ' + opacity + ')'
@@ -277,6 +289,25 @@ export const SynapticNetworkCanvas: React.FC<SynapticNetworkCanvasProps> = ({
                   ? '#f43f5e'
                   : 'rgba(244, 63, 94, ' + opacity + ')'
                 : 'rgba(148, 163, 184, 0.12)'
+
+              if (isDiffHighlighted) {
+                if (diffChange && diffChange.mag_change > 0.005) {
+                  strokeColor = '#00ff88'
+                  strokeWidth = Math.max(strokeWidth, 3.2)
+                  opacity = 0.95
+                } else if (diffChange && diffChange.mag_change < -0.005) {
+                  strokeColor = '#ff3366'
+                  strokeWidth = Math.max(strokeWidth, 3.2)
+                  opacity = 0.95
+                } else {
+                  opacity = 0.05
+                  strokeColor = 'rgba(148, 163, 184, 0.06)'
+                }
+              } else if (isMemoryTrail) {
+                strokeColor = '#c084fc'
+                strokeWidth = Math.max(strokeWidth, 3.4)
+                opacity = 0.95
+              }
 
               // Curved bezier path for organic scientific look
               const midX = (srcPos.x + tgtPos.x) / 2

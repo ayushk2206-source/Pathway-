@@ -1031,3 +1031,51 @@ export function getSynapticFromExperiment(
 ): Promise<import('./types').SynapticNetworkState> {
   return json(`${BASE}/synaptic/experiment/${encodeURIComponent(experimentId)}/step/${stepIdx}?display_dim=${displayDim}`)
 }
+
+export function getSynapticHistory(): Promise<import('./types').TimeMachineHistoryResponse> {
+  return json(`${BASE}/synaptic/history`)
+}
+
+export function getSynapticSnapshot(stepIdx: number): Promise<import('./types').SynapticNetworkState> {
+  return json(`${BASE}/synaptic/snapshot/${stepIdx}`)
+}
+
+export function getSynapseHistory(synapseId: string): Promise<import('./types').SynapseHistory> {
+  return json(`${BASE}/synaptic/synapse/${encodeURIComponent(synapseId)}/history`)
+}
+
+export function getMemoryHistory(concept: string): Promise<import('./types').MemoryHistory> {
+  return json(`${BASE}/synaptic/memory/${encodeURIComponent(concept)}/history`)
+}
+
+export function diffSynapticStates(req: {
+  step_a: number
+  step_b: number
+  experiment_id?: string
+}): Promise<import('./types').StateDiffResult> {
+  return json(`${BASE}/synaptic/diff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runSynapticProtocol(req?: {
+  protocol_name?: string
+  dimension?: number
+  decay?: number
+  seed?: number
+}): Promise<import('./types').TimeMachineProtocolResponse> {
+  return json(`${BASE}/synaptic/protocol`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req || {}),
+  })
+}
+
+export function getExperimentSynapticHistory(
+  experimentId: string,
+  displayDim: number = 16,
+): Promise<{ experiment_id: string; total_steps: number; states: import('./types').SynapticNetworkState[] }> {
+  return json(`${BASE}/synaptic/experiment/${encodeURIComponent(experimentId)}/history?display_dim=${displayDim}`)
+}

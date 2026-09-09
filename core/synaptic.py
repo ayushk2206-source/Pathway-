@@ -193,6 +193,7 @@ class SynapticNetworkState:
     last_explanation: Optional[SynapticExplanation]
     last_recall: Optional[SynapticRecallResult]
     history_timeline: List[Dict[str, Any]]
+    matrix_weights: Optional[List[List[float]]] = None
 
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -211,6 +212,7 @@ class SynapticNetworkState:
             "last_explanation": self.last_explanation.to_dict() if self.last_explanation else None,
             "last_recall": self.last_recall.to_dict() if self.last_recall else None,
             "history_timeline": self.history_timeline,
+            "matrix_weights": self.matrix_weights,
         }
 
 
@@ -252,6 +254,7 @@ class SynapticBrain:
         self.library: List[Memory] = []
         self.timestep: int = 0
         self.history_timeline: List[Dict[str, Any]] = []
+        self.snapshots: List[SynapticNetworkState] = []
 
         # Last results
         self.last_pathway: Optional[SynapticPathway] = None
@@ -278,6 +281,7 @@ class SynapticBrain:
                 "details": details,
             }
         )
+        self.snapshots.append(self.get_state())
 
     def write(
         self,
@@ -542,6 +546,7 @@ class SynapticBrain:
         self.library = []
         self.timestep = 0
         self.history_timeline = []
+        self.snapshots = []
         self.last_pathway = None
         self.last_explanation = None
         self.last_recall = None
@@ -692,8 +697,228 @@ class SynapticBrain:
             last_pathway=self.last_pathway,
             last_explanation=self.last_explanation,
             last_recall=self.last_recall,
-            history_timeline=self.history_timeline,
+            history_timeline=list(self.history_timeline),
+            matrix_weights=self.W.tolist(),
         )
+
+    def get_state_at_step(self, step: int) -> SynapticNetworkState:
+        """Retrieve historical state snapshot at exact timestep."""
+        if not self.snapshots:
+            return self.get_state()
+        idx = max(0, min(len(self.snapshots) - 1, int(step)))
+        return self.snapshots[idx]
+
+    def get_synapse_history(self, synapse_id: str) -> Dict[str, Any]:
+        """Track how an individual synapse's weight and polarity evolved through time."""
+        source_idx = 0
+        target_idx = 0
+        parts = synapse_id.split("_")
+        if len(parts) == 3 and parts[0] == "syn" and parts[1].startswith("k") and parts[2].startswith("v"):
+            try:
+                source_idx = int(parts[1][1:])
+                target_idx = int(parts[2][1:])
+            except ValueError:
+                pass
+
+        source_idx = max(0, min(self.d - 1, source_idx))
+        target_idx = max(0, min(self.d - 1, target_idx))
+
+        points = []
+        for snap in self.snapshots:
+            w = 0.0
+            if snap.matrix_weights and target_idx < len(snap.matrix_weights) and source_idx < len(snap.matrix_weights[target_idx]):
+                w = float(snap.matrix_weights[target_idx][source_idx])
+            else:
+                for s in snap.synapses:
+                    if s.source_idx == source_idx and s.target_idx == target_idx:
+                        w = s.weight
+                        break
+            points.append({
+                "step": snap.timestep,
+                "weight": w,
+                "abs_weight": abs(w),
+                "event_type": snap.last_explanation.event_type if snap.last_explanation else "INIT",
+                "label": snap.last_explanation.event_label if snap.last_explanation else f"T{snap.timestep}",
+            })
+
+        weights = [p["weight"] for p in points]
+        init_w = weights[0] if weights else 0.0
+        curr_w = weights[-1] if weights else 0.0
+        max_abs_w = max([abs(w) for w in weights]) if weights else 0.0
+        tot_change = curr_w - init_w
+        update_cnt = 0
+        for idx in range(1, len(weights)):
+            if abs(weights[idx] - weights[idx - 1]) > 1e-5:
+                update_cnt += 1
+
+        return {
+            "synapse_id": f"syn_k{source_idx}_v{target_idx}",
+            "source": f"k_{source_idx}",
+            "target": f"v_{target_idx}",
+            "source_idx": source_idx,
+            "target_idx": target_idx,
+            "initial_weight": float(init_w),
+            "max_weight": float(max_abs_w),
+            "current_weight": float(curr_w),
+            "total_change": float(tot_change),
+            "update_count": int(update_cnt),
+            "history": points,
+        }
+
+    def get_memory_history(self, concept: str) -> Dict[str, Any]:
+        """Track how a specific memory/concept pathway and retention evolved through time."""
+        clean_concept = concept.strip().lower()
+        matched_mem = None
+        for m in self.library:
+            if m.concept.strip().lower() == clean_concept:
+                matched_mem = m
+                break
+
+        k_vec = encode_concept_vector(clean_concept, self.seed, self.d)
+        val_name = matched_mem.value if matched_mem else clean_concept
+        v_vec = encode_value_vector(val_name, self.seed, self.d)
+
+        written_step = 0
+        if matched_mem and matched_mem.metadata:
+            written_step = int(matched_mem.metadata.get("write_step", 0))
+
+        trail_points = []
+        peak_strength = 0.0
+
+        for snap in self.snapshots:
+            w_mat = np.array(snap.matrix_weights) if snap.matrix_weights else np.zeros((self.d, self.d))
+            readout = w_mat @ k_vec
+            readout_norm = float(np.linalg.norm(readout))
+            sim = float(cosine(readout, v_vec)) if readout_norm > 1e-6 else 0.0
+            strength = float(np.dot(readout, v_vec))
+            if abs(strength) > peak_strength:
+                peak_strength = abs(strength)
+
+            top_k_indices = np.where(np.abs(k_vec) > np.percentile(np.abs(k_vec), 70))[0].tolist()
+            top_v_indices = np.where(np.abs(readout) > np.percentile(np.abs(readout), 70))[0].tolist() if readout_norm > 1e-6 else []
+            active_syns = [
+                f"syn_k{j}_v{i}"
+                for i in top_v_indices
+                for j in top_k_indices
+                if abs(w_mat[i, j]) > 1e-4
+            ]
+
+            trail_points.append({
+                "step": snap.timestep,
+                "fidelity": float(sim),
+                "strength": float(strength),
+                "readout_norm": readout_norm,
+                "event_type": snap.last_explanation.event_type if snap.last_explanation else "INIT",
+                "label": snap.last_explanation.event_label if snap.last_explanation else f"T{snap.timestep}",
+                "active_synapses": active_syns[:10],
+            })
+
+        curr_strength = trail_points[-1]["strength"] if trail_points else 0.0
+        retention = (curr_strength / (peak_strength + 1e-9)) if peak_strength > 1e-6 else 0.0
+
+        return {
+            "concept": clean_concept,
+            "value": val_name,
+            "written_step": written_step,
+            "peak_synaptic_strength": float(peak_strength),
+            "current_strength": float(curr_strength),
+            "retention_rate": float(max(0.0, min(1.0, retention))),
+            "recall_fidelity": float(trail_points[-1]["fidelity"] if trail_points else 0.0),
+            "trail": trail_points,
+        }
+
+    def diff_states(self, step_a: int, step_b: int) -> Dict[str, Any]:
+        """Perform forensic delta analysis between two historical states W(Ta) and W(Tb)."""
+        snap_a = self.get_state_at_step(step_a)
+        snap_b = self.get_state_at_step(step_b)
+
+        w_a = np.array(snap_a.matrix_weights) if snap_a.matrix_weights else np.zeros((self.d, self.d))
+        w_b = np.array(snap_b.matrix_weights) if snap_b.matrix_weights else np.zeros((self.d, self.d))
+
+        delta_w = w_b - w_a
+        abs_delta = np.abs(delta_w)
+        frob_norm = float(np.linalg.norm(delta_w))
+        mean_delta = float(np.mean(abs_delta))
+        max_delta = float(np.max(abs_delta))
+
+        strengthened = []
+        weakened = []
+        unchanged_count = 0
+
+        for i in range(self.d):
+            for j in range(self.d):
+                diff = float(delta_w[i, j])
+                mag_a = abs(float(w_a[i, j]))
+                mag_b = abs(float(w_b[i, j]))
+                mag_change = mag_b - mag_a
+
+                syn_info = {
+                    "synapse_id": f"syn_k{j}_v{i}",
+                    "source": f"k_{j}",
+                    "target": f"v_{i}",
+                    "source_idx": j,
+                    "target_idx": i,
+                    "weight_a": float(w_a[i, j]),
+                    "weight_b": float(w_b[i, j]),
+                    "delta_weight": diff,
+                    "mag_change": mag_change,
+                }
+
+                if mag_change > 0.005:
+                    strengthened.append(syn_info)
+                elif mag_change < -0.005:
+                    weakened.append(syn_info)
+                else:
+                    unchanged_count += 1
+
+        all_changes = strengthened + weakened
+        all_changes.sort(key=lambda x: abs(x["delta_weight"]), reverse=True)
+
+        return {
+            "step_a": snap_a.timestep,
+            "step_b": snap_b.timestep,
+            "step_a_label": snap_a.last_explanation.event_label if snap_a.last_explanation else f"Step {snap_a.timestep}",
+            "step_b_label": snap_b.last_explanation.event_label if snap_b.last_explanation else f"Step {snap_b.timestep}",
+            "frobenius_norm_delta": frob_norm,
+            "mean_abs_delta": mean_delta,
+            "max_delta": max_delta,
+            "strengthened_count": len(strengthened),
+            "weakened_count": len(weakened),
+            "unchanged_count": unchanged_count,
+            "top_changes": all_changes[:15],
+            "delta_matrix": delta_w.tolist(),
+        }
+
+    def run_temporary_memory_protocol(self) -> Dict[str, Any]:
+        """Execute guided multi-step protocol demonstrating temporary synaptic short-term memory:
+        WRITE -> STRENGTHEN -> HOLD -> DECAY -> RECALL.
+        """
+        self.reset()
+        # Step 1: Initial Write (Hebbian LTP)
+        self.write("cue_alpha", "signal_active", importance=1.0, strength=1.0)
+        # Step 2: Consolidation / Repeated write
+        self.write("cue_alpha", "signal_active", importance=0.8, strength=1.2)
+        # Step 3: Hold / Distractor write (cross-talk introduction)
+        self.write("cue_beta", "distractor_signal", importance=0.6, strength=0.8)
+        # Step 4: Decay phase (3 idle steps)
+        self.decay_step(n_steps=3)
+        # Step 5: Associative probe recall
+        self.recall("cue_alpha", expected_value="signal_active")
+
+        return {
+            "status": "completed",
+            "protocol_name": "Temporary Memory Dynamics",
+            "steps_count": len(self.snapshots),
+            "timeline": [
+                {
+                    "step": s.timestep,
+                    "label": s.last_explanation.event_label if s.last_explanation else f"T{s.timestep}",
+                    "event_type": s.last_explanation.event_type if s.last_explanation else "INIT",
+                }
+                for s in self.snapshots
+            ],
+            "current_state": self.get_state().to_dict(),
+        }
 
 
 def extract_synaptic_state_from_experiment(
@@ -767,3 +992,21 @@ def extract_synaptic_state_from_experiment(
         )
 
     return brain.get_state()
+
+
+def extract_synaptic_history_from_experiment(
+    exp: Experiment,
+    display_dim: int = 16,
+) -> List[Dict[str, Any]]:
+    """Extract chronological sequence of synaptic states across all snapshots in an experiment."""
+    snapshots = exp.snapshots
+    if not snapshots:
+        brain = SynapticBrain(seed=exp.seed, d=display_dim)
+        return [brain.get_state().to_dict()]
+
+    history = []
+    for idx in range(len(snapshots)):
+        st = extract_synaptic_state_from_experiment(exp, step_idx=idx, display_dim=display_dim)
+        history.append(st.to_dict())
+    return history
+

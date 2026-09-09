@@ -1,19 +1,24 @@
 import React, { useEffect, useState } from 'react'
 import type {
   Experiment,
+  StateDiffResult,
   SynapticNetworkState,
 } from '../types'
 import {
   decaySynapticBrain,
   getSynapticFromExperiment,
+  getSynapticSnapshot,
   getSynapticState,
   recallSynapticMemory,
   resetSynapticBrain,
+  runSynapticProtocol,
   runSynapticScenario,
   writeSynapticMemory,
 } from '../api'
 import { SynapticNetworkCanvas } from '../components/SynapticNetworkCanvas'
 import { SynapticInspectorDrawer } from '../components/SynapticInspectorDrawer'
+import { SynapticTimeScrubber } from '../components/SynapticTimeScrubber'
+import { SynapticDiffInspector } from '../components/SynapticDiffInspector'
 
 interface SynapticBrainWorkspaceProps {
   experiment: Experiment | null
@@ -40,6 +45,16 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
   const [showAllSynapses, setShowAllSynapses] = useState<boolean>(true)
   const [showMethodologyModal, setShowMethodologyModal] = useState<boolean>(false)
 
+  // Time Machine States
+  const [activeStep, setActiveStep] = useState<number>(0)
+  const [isPlaying, setIsPlaying] = useState<boolean>(false)
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1)
+  const [isFrozen, setIsFrozen] = useState<boolean>(false)
+  const [showDiffModal, setShowDiffModal] = useState<boolean>(false)
+  const [diffHighlightMode, setDiffHighlightMode] = useState<boolean>(true)
+  const [activeDiffResult, setActiveDiffResult] = useState<StateDiffResult | null>(null)
+  const [selectedConcept, setSelectedConcept] = useState<string | null>(null)
+
   // Selection
   const [selectedNeuronId, setSelectedNeuronId] = useState<string | null>(null)
   const [selectedSynapseId, setSelectedSynapseId] = useState<string | null>(null)
@@ -55,11 +70,23 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
   const [recallExpected, setRecallExpected] = useState<string>('blue')
   const [recallMeasure, setRecallMeasure] = useState<string>('cosine')
 
-  // Load initial state
+  // Load initial state and check URL query param
   useEffect(() => {
     setIsBusy(true)
+    const params = new URLSearchParams(window.location.search)
+    const initialT = params.get('t') ? parseInt(params.get('t')!, 10) : null
+
     getSynapticState(dimension, decay)
-      .then((st) => setNetworkState(st))
+      .then(async (st) => {
+        setNetworkState(st)
+        if (initialT !== null && initialT >= 0 && initialT < st.history_timeline.length) {
+          setActiveStep(initialT)
+          const snap = await getSynapticSnapshot(initialT)
+          setNetworkState(snap)
+        } else {
+          setActiveStep(st.timestep)
+        }
+      })
       .catch(() => {})
       .finally(() => setIsBusy(false))
   }, [dimension])
@@ -75,8 +102,106 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
         dimension
       )
       setNetworkState(st)
+      setActiveStep(currentStep)
     } catch (e) {
       alert(`Failed to load from experiment: ${String(e)}`)
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  const syncStateAndStep = (st: SynapticNetworkState) => {
+    setNetworkState(st)
+    setActiveStep(st.timestep)
+    const url = new URL(window.location.href)
+    url.searchParams.set('t', String(st.timestep))
+    window.history.replaceState({}, '', url.toString())
+  }
+
+  // Time Machine Scrubbing
+  const handleScrub = async (step: number) => {
+    setActiveStep(step)
+    setIsBusy(true)
+    try {
+      if (experiment) {
+        const st = await getSynapticFromExperiment(experiment.experiment_id, step, dimension)
+        setNetworkState(st)
+      } else {
+        const st = await getSynapticSnapshot(step)
+        setNetworkState(st)
+      }
+      const url = new URL(window.location.href)
+      url.searchParams.set('t', String(step))
+      window.history.replaceState({}, '', url.toString())
+    } catch (e) {
+      console.error(`Scrub to step ${step} failed:`, e)
+    } finally {
+      setIsBusy(false)
+    }
+  }
+
+  // Auto playback loop
+  useEffect(() => {
+    if (!isPlaying) return
+    const totalSteps = networkState?.history_timeline.length ?? 0
+    if (totalSteps <= 1) {
+      setIsPlaying(false)
+      return
+    }
+
+    const intervalMs = Math.max(250, Math.round(1200 / playbackSpeed))
+    const timer = setInterval(() => {
+      setActiveStep((prev) => {
+        const next = prev + 1
+        if (next >= totalSteps) {
+          setIsPlaying(false)
+          return prev
+        }
+        handleScrub(next)
+        return next
+      })
+    }, intervalMs)
+
+    return () => clearInterval(timer)
+  }, [isPlaying, playbackSpeed, networkState?.history_timeline.length])
+
+  const handleTogglePlay = () => {
+    const total = networkState?.history_timeline.length ?? 0
+    if (total <= 1) return
+    if (activeStep >= total - 1) {
+      handleScrub(0)
+    }
+    setIsPlaying(!isPlaying)
+  }
+
+  const handleStepForward = () => {
+    const total = networkState?.history_timeline.length ?? 0
+    if (activeStep < total - 1) {
+      handleScrub(activeStep + 1)
+    }
+  }
+
+  const handleStepBackward = () => {
+    if (activeStep > 0) {
+      handleScrub(activeStep - 1)
+    }
+  }
+
+  const handleToggleFreeze = () => {
+    if (isPlaying) setIsPlaying(false)
+    setIsFrozen(!isFrozen)
+  }
+
+  const handleRunGuidedProtocol = async () => {
+    setIsBusy(true)
+    try {
+      const res = await runSynapticProtocol({ dimension, decay })
+      setNetworkState(res.current_state)
+      setActiveStep(0)
+      await handleScrub(0)
+      setIsPlaying(true)
+    } catch (e) {
+      alert(`Guided protocol failed: ${String(e)}`)
     } finally {
       setIsBusy(false)
     }
@@ -98,10 +223,10 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
         memory_strength: memoryStrength,
         dimension,
       })
-      setNetworkState(updated)
-      // Auto populate recall concept for convenience
+      syncStateAndStep(updated)
       setRecallConcept(writeConcept.trim())
       setRecallExpected(writeValue.trim())
+      setSelectedConcept(writeConcept.trim())
     } catch (err) {
       alert(`Write failed: ${String(err)}`)
     } finally {
@@ -120,7 +245,8 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
         measure: recallMeasure,
         dimension,
       })
-      setNetworkState(updated)
+      syncStateAndStep(updated)
+      setSelectedConcept(recallConcept.trim())
     } catch (err) {
       alert(`Recall failed: ${String(err)}`)
     } finally {
@@ -132,7 +258,7 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
     setIsBusy(true)
     try {
       const updated = await decaySynapticBrain(steps, decay)
-      setNetworkState(updated)
+      syncStateAndStep(updated)
     } catch (err) {
       alert(`Decay failed: ${String(err)}`)
     } finally {
@@ -144,9 +270,10 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
     setIsBusy(true)
     try {
       const updated = await resetSynapticBrain(dimension, decay)
-      setNetworkState(updated)
+      syncStateAndStep(updated)
       setSelectedNeuronId(null)
       setSelectedSynapseId(null)
+      setSelectedConcept(null)
     } catch (err) {
       alert(`Reset failed: ${String(err)}`)
     } finally {
@@ -158,9 +285,10 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
     setIsBusy(true)
     try {
       const updated = await runSynapticScenario(presetName, dimension, decay)
-      setNetworkState(updated)
+      syncStateAndStep(updated)
       setSelectedNeuronId(null)
       setSelectedSynapseId(null)
+      setSelectedConcept(null)
     } catch (err) {
       alert(`Preset failed: ${String(err)}`)
     } finally {
@@ -515,6 +643,25 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
             </div>
           </div>
 
+          {/* Freeze Alert Banner */}
+          {isFrozen && (
+            <div className="freeze-banner-alert">
+              <div className="freeze-banner-content">
+                <span className="freeze-icon">❄</span>
+                <span className="freeze-text">
+                  <strong>CHRONOMETER FROZEN AT TIMESTEP T{activeStep}.</strong> State is locked for microscopic inspection.
+                </span>
+              </div>
+              <button
+                type="button"
+                className="btn-unfreeze"
+                onClick={handleToggleFreeze}
+              >
+                ▶ Resume Live Stream
+              </button>
+            </div>
+          )}
+
           {/* Interactive Network Canvas */}
           <div className="canvas-wrapper">
             {networkState && (
@@ -536,31 +683,37 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
                 layoutMode={layoutMode}
                 showLabels={showLabels}
                 showAllSynapses={showAllSynapses}
+                diffResult={activeDiffResult}
+                diffHighlightMode={diffHighlightMode && showDiffModal}
+                memoryTrailActiveSynapses={
+                  selectedConcept && networkState.last_pathway?.active_synapse_ids
+                    ? networkState.last_pathway.active_synapse_ids
+                    : []
+                }
               />
             )}
           </div>
 
-          {/* Bottom Event Timeline */}
-          <div className="synaptic-timeline-bar">
-            <div className="timeline-bar-header">
-              <span className="timeline-title">EVENT TIMELINE</span>
-              <span className="timeline-hint">Select event to inspect historical synaptic state</span>
-            </div>
-            <div className="timeline-events-track">
-              {networkState?.history_timeline.map((item, idx) => (
-                <div
-                  key={idx}
-                  className={`timeline-step-chip ${item.event_type.toLowerCase()}`}
-                  title={`${item.event_type}: ${item.label}`}
-                >
-                  <span className="step-num">T{item.step}</span>
-                  <span className="step-type">{item.event_type}</span>
-                  <span className="step-label">{item.label}</span>
-                  <span className="step-norm">||W||={item.matrix_norm.toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Bottom Time Machine Timeline Scrubber */}
+          {networkState && (
+            <SynapticTimeScrubber
+              timeline={networkState.history_timeline}
+              currentStep={activeStep}
+              totalSteps={networkState.history_timeline.length}
+              isPlaying={isPlaying}
+              playbackSpeed={playbackSpeed}
+              isFrozen={isFrozen}
+              diffMode={showDiffModal}
+              onScrub={handleScrub}
+              onTogglePlay={handleTogglePlay}
+              onStepForward={handleStepForward}
+              onStepBackward={handleStepBackward}
+              onSetSpeed={(s) => setPlaybackSpeed(s)}
+              onToggleFreeze={handleToggleFreeze}
+              onToggleDiff={() => setShowDiffModal(!showDiffModal)}
+              onRunProtocol={handleRunGuidedProtocol}
+            />
+          )}
         </section>
 
         {/* ── Right Telemetry & Forensic Analysis ──────────────────── */}
@@ -673,19 +826,43 @@ export const SynapticBrainWorkspace: React.FC<SynapticBrainWorkspaceProps> = ({
             </div>
           )}
 
-          {/* Synapse / Neuron Inspector Drawer */}
-          {(selectedNeuron || selectedSynapse) && (
+          {/* Synapse / Neuron / Memory Inspector Drawer */}
+          {(selectedNeuron || selectedSynapse || selectedConcept) && (
             <SynapticInspectorDrawer
               neuron={selectedNeuron}
               synapse={selectedSynapse}
+              selectedConcept={selectedConcept}
               onClose={() => {
                 setSelectedNeuronId(null)
                 setSelectedSynapseId(null)
+                setSelectedConcept(null)
               }}
+              onSelectConcept={(c) => setSelectedConcept(c)}
             />
           )}
         </aside>
       </div>
+
+      {/* ── Before / After Forensic Diff Modal ──────────────────────── */}
+      {showDiffModal && networkState && (
+        <div className="diff-modal-backdrop" onClick={() => setShowDiffModal(false)}>
+          <div className="diff-modal-content" onClick={(e) => e.stopPropagation()}>
+            <SynapticDiffInspector
+              timeline={networkState.history_timeline}
+              currentStep={activeStep}
+              experimentId={experiment?.experiment_id}
+              diffHighlight={diffHighlightMode}
+              onToggleDiffHighlight={(val) => setDiffHighlightMode(val)}
+              onSelectSynapse={(id) => {
+                setSelectedSynapseId(id)
+                setSelectedNeuronId(null)
+              }}
+              onClose={() => setShowDiffModal(false)}
+              onDiffComputed={(diff) => setActiveDiffResult(diff)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* ── Scientific Methodology & Honesty Modal ──────────────────── */}
       {showMethodologyModal && (

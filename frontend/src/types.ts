@@ -1110,6 +1110,93 @@ export interface SynapticNetworkState {
   last_explanation: SynapticExplanation | null
   last_recall: SynapticRecallResult | null
   history_timeline: SynapticTimelineEvent[]
+  matrix_weights?: number[][] | null
+}
+
+export interface SynapseHistoryPoint {
+  step: number
+  weight: number
+  abs_weight: number
+  event_type: string
+  label: string
+}
+
+export interface SynapseHistory {
+  synapse_id: string
+  source: string
+  target: string
+  source_idx: number
+  target_idx: number
+  initial_weight: number
+  max_weight: number
+  current_weight: number
+  total_change: number
+  update_count: number
+  history: SynapseHistoryPoint[]
+}
+
+export interface MemoryTrailPoint {
+  step: number
+  fidelity: number
+  strength: number
+  readout_norm: number
+  event_type: string
+  label: string
+  active_synapses: string[]
+}
+
+export interface MemoryHistory {
+  concept: string
+  value: string
+  written_step: number
+  peak_synaptic_strength: number
+  current_strength: number
+  retention_rate: number
+  recall_fidelity: number
+  trail: MemoryTrailPoint[]
+}
+
+export interface SynapseDelta {
+  synapse_id: string
+  source: string
+  target: string
+  source_idx: number
+  target_idx: number
+  weight_a: number
+  weight_b: number
+  delta_weight: number
+  mag_change: number
+}
+
+export interface StateDiffResult {
+  step_a: number
+  step_b: number
+  step_a_label: string
+  step_b_label: string
+  frobenius_norm_delta: number
+  mean_abs_delta: number
+  max_delta: number
+  strengthened_count: number
+  weakened_count: number
+  unchanged_count: number
+  top_changes: SynapseDelta[]
+  delta_matrix: number[][]
+}
+
+export interface TimeMachineHistoryResponse {
+  total_steps: number
+  current_timestep: number
+  timeline: SynapticTimelineEvent[]
+  active_synapses_count: number
+  matrix_norm: number
+}
+
+export interface TimeMachineProtocolResponse {
+  status: string
+  protocol_name: string
+  steps_count: number
+  timeline: Array<{ step: number; label: string; event_type: string }>
+  current_state: SynapticNetworkState
 }
 
 export interface SynapticInfo {

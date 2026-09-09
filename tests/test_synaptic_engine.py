@@ -144,3 +144,116 @@ def test_synaptic_api_endpoints():
     # Scenario
     r = client.post("/api/synaptic/scenario", json={"scenario": "hebbian_formation", "dimension": 8})
     assert r.status_code == 200
+
+
+def test_time_machine_snapshots_and_scrubbing():
+    brain = SynapticBrain(seed=42, d=8, decay=0.05)
+    assert len(brain.snapshots) == 1
+    assert brain.snapshots[0].timestep == 0
+
+    # Write 1
+    brain.write("color", "red")
+    assert len(brain.snapshots) == 2
+    assert brain.snapshots[1].timestep == 1
+
+    # Write 2
+    brain.write("shape", "circle")
+    assert len(brain.snapshots) == 3
+    assert brain.snapshots[2].timestep == 2
+
+    # Decay
+    brain.decay_step(n_steps=2)
+    assert len(brain.snapshots) == 4
+    assert brain.snapshots[3].timestep == 4
+
+    # Scrub back to step 1
+    snap1 = brain.get_state_at_step(1)
+    assert snap1.timestep == 1
+    assert snap1.last_explanation is not None
+    assert "COLOR" in snap1.last_explanation.event_label
+
+    # Verify snap1 matrix has non-zero weights from write 1
+    assert snap1.matrix_norm > 0.0
+    # Step 0 is empty
+    snap0 = brain.get_state_at_step(0)
+    assert snap0.matrix_norm == 0.0
+
+
+def test_synapse_and_memory_history_tracking():
+    brain = SynapticBrain(seed=42, d=8, decay=0.1)
+    brain.write("item", "shield")
+    brain.write("item", "shield", strength=1.5)  # consolidation
+    brain.decay_step(n_steps=2)
+
+    # Synapse history
+    active_syn_id = brain.get_state().synapses[0].id
+    syn_hist = brain.get_synapse_history(active_syn_id)
+    assert syn_hist["synapse_id"] == active_syn_id
+    assert "history" in syn_hist
+    assert len(syn_hist["history"]) == len(brain.snapshots)
+    assert syn_hist["max_weight"] >= 0.0
+
+    # Memory history
+    mem_hist = brain.get_memory_history("item")
+    assert mem_hist["concept"] == "item"
+    assert mem_hist["value"] == "shield"
+    assert len(mem_hist["trail"]) == len(brain.snapshots)
+    assert mem_hist["peak_synaptic_strength"] > 0.0
+
+
+def test_before_after_state_diff():
+    brain = SynapticBrain(seed=42, d=8, decay=0.05)
+    # T0 is empty
+    brain.write("alpha", "val1")  # T1
+    brain.decay_step(n_steps=3)  # T4
+
+    # Diff T0 -> T1: should show strengthened synapses
+    diff_0_1 = brain.diff_states(0, 1)
+    assert diff_0_1["step_a"] == 0
+    assert diff_0_1["step_b"] == 1
+    assert diff_0_1["strengthened_count"] > 0
+    assert diff_0_1["frobenius_norm_delta"] > 0.0
+
+    # Diff T1 -> T2 (which is snapshot index 2, decay): should show weakened synapses
+    diff_1_2 = brain.diff_states(1, 2)
+    assert diff_1_2["weakened_count"] > 0
+
+
+def test_guided_protocol_and_time_machine_apis():
+    app = create_app()
+    client = TestClient(app)
+
+    # Execute temporary memory demonstration protocol
+    r = client.post("/api/synaptic/protocol", json={"dimension": 8})
+    assert r.status_code == 200
+    proto_data = r.json()
+    assert proto_data["status"] == "completed"
+    assert proto_data["steps_count"] >= 5
+
+    # Retrieve history
+    r_hist = client.get("/api/synaptic/history")
+    assert r_hist.status_code == 200
+    assert r_hist.json()["total_steps"] >= 5
+
+    # Scrub to step 1
+    r_snap = client.get("/api/synaptic/snapshot/1")
+    assert r_snap.status_code == 200
+    assert r_snap.json()["timestep"] == 1
+
+    # Diff step 0 vs step 1
+    r_diff = client.post("/api/synaptic/diff", json={"step_a": 0, "step_b": 1})
+    assert r_diff.status_code == 200
+    diff_res = r_diff.json()
+    assert diff_res["strengthened_count"] > 0
+    assert len(diff_res["top_changes"]) > 0
+
+    # Synapse history
+    r_syn = client.get("/api/synaptic/synapse/syn_k0_v0/history")
+    assert r_syn.status_code == 200
+    assert "history" in r_syn.json()
+
+    # Memory history
+    r_mem = client.get("/api/synaptic/memory/cue_alpha/history")
+    assert r_mem.status_code == 200
+    assert r_mem.json()["concept"] == "cue_alpha"
+

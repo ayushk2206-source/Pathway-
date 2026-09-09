@@ -257,6 +257,7 @@ __all__ = [
     "SynapticRecallResult",
     "SynapticNetworkState",
     "extract_synaptic_state_from_experiment",
+    "extract_synaptic_history_from_experiment",
     "__version__",
     "SCHEMA_VERSION",
 ]
