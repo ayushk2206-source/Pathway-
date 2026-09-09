@@ -27,6 +27,7 @@ from .lab_routes import router as lab_router
 from .memory_routes import router as memory_router
 from .routes import router
 from .store import ExperimentStore
+from .synaptic_routes import synaptic_router
 from .xray_routes import xray_router
 
 DEV_ORIGINS = [
@@ -63,6 +64,7 @@ def create_app(store: ExperimentStore | None = None) -> FastAPI:
     app.include_router(detective_router, prefix="/api")
     app.include_router(genome_router, prefix="/api")
     app.include_router(causal_router, prefix="/api")
+    app.include_router(synaptic_router, prefix="/api")
 
     @app.get("/health")
     def root_health() -> dict:

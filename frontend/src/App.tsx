@@ -48,6 +48,7 @@ import { EvidenceModal } from './components/EvidenceModal'
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal'
 import { MemoryInspectorDrawer } from './components/MemoryInspectorDrawer'
 import { ObservatoryWorkspace } from './workspaces/ObservatoryWorkspace'
+import { SynapticBrainWorkspace } from './workspaces/SynapticBrainWorkspace'
 import { MemoryLabWorkspace } from './workspaces/MemoryLabWorkspace'
 import { MemoryXRayWorkspace } from './workspaces/MemoryXRayWorkspace'
 import { TimelineWorkspace } from './workspaces/TimelineWorkspace'
@@ -63,7 +64,7 @@ import './App.css'
 
 export default function App() {
   // Navigation & Workspace state
-  const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceId>('observatory')
+  const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceId>('synaptic')
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
   const [evidenceData, setEvidenceData] = useState<{ title: string; details: Record<string, unknown> } | null>(null)
@@ -262,6 +263,9 @@ export default function App() {
       }
 
       switch (e.key.toLowerCase()) {
+        case 's':
+          setActiveWorkspace('synaptic')
+          break
         case 'x':
           setActiveWorkspace('xray')
           break
@@ -369,6 +373,14 @@ export default function App() {
         />
 
         <main className="main-canvas">
+          {activeWorkspace === 'synaptic' && (
+            <SynapticBrainWorkspace
+              experiment={experiment}
+              currentStep={currentStep}
+              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+            />
+          )}
+
           {activeWorkspace === 'observatory' && (
             <ObservatoryWorkspace
               experiment={experiment}

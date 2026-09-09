@@ -230,3 +230,47 @@ class ScenarioRequest(BaseModel):
 
     name: str
     overrides: Dict[str, Any] = Field(default_factory=dict)
+
+
+# ---------------------------------------------------------------------------
+# Live Synaptic Brain Schemas
+# ---------------------------------------------------------------------------
+class SynapticWriteRequest(BaseModel):
+    """POST /api/synaptic/write — live Hebbian synaptic write."""
+
+    concept: str
+    value: str
+    importance: float = 1.0
+    strength: float = 1.0
+    decay: float = 0.05
+    update_strength: float = 1.0
+    memory_strength: float = 1.0
+    seed: int = 42
+    dimension: int = 16
+
+
+class SynapticRecallRequest(BaseModel):
+    """POST /api/synaptic/recall — live associative recall probe."""
+
+    query_concept: str
+    expected_value: Optional[str] = None
+    measure: str = "cosine"
+    top_k: int = 5
+    seed: int = 42
+    dimension: int = 16
+
+
+class SynapticDecayRequest(BaseModel):
+    """POST /api/synaptic/decay — step dynamics without input."""
+
+    steps: int = 1
+    decay: float = 0.05
+
+
+class SynapticScenarioRequest(BaseModel):
+    """POST /api/synaptic/scenario — run educational plasticity preset."""
+
+    scenario: str = "hebbian_formation"
+    dimension: int = 16
+    decay: float = 0.05
+    seed: int = 42

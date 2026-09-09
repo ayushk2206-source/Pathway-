@@ -137,6 +137,16 @@ from .scenarios import (
     run_scenario,
     strength_sweep,
 )
+from .synaptic import (
+    SynapticBrain,
+    SynapticConnection,
+    SynapticExplanation,
+    SynapticNetworkState,
+    SynapticNeuron,
+    SynapticPathway,
+    SynapticRecallResult,
+    extract_synaptic_state_from_experiment,
+)
 from .task import Query, Task, TaskConfig, generate_task
 
 __version__ = "0.4.0"
@@ -238,6 +248,15 @@ __all__ = [
     "find_minimal_intervention",
     "export_counterfactual_json",
     "export_divergence_csv",
+    # Synaptic Brain
+    "SynapticBrain",
+    "SynapticNeuron",
+    "SynapticConnection",
+    "SynapticPathway",
+    "SynapticExplanation",
+    "SynapticRecallResult",
+    "SynapticNetworkState",
+    "extract_synaptic_state_from_experiment",
     "__version__",
     "SCHEMA_VERSION",
 ]

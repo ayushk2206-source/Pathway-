@@ -1,6 +1,7 @@
 import React from 'react'
 
 export type WorkspaceId =
+  | 'synaptic'
   | 'observatory'
   | 'lab'
   | 'xray'
@@ -22,6 +23,7 @@ interface CommandRailProps {
 }
 
 const NAV_ITEMS: { id: WorkspaceId; label: string; icon: string; shortcut?: string }[] = [
+  { id: 'synaptic',       label: 'Synaptic Brain', icon: '☊', shortcut: 'S' },
   { id: 'observatory',    label: 'Observe',        icon: '○', shortcut: '1' },
   { id: 'lab',            label: 'Memory Lab',     icon: '◈', shortcut: '2' },
   { id: 'xray',           label: 'X-Ray',          icon: '⌬', shortcut: 'X' },

@@ -938,3 +938,96 @@ export function causalHandoffToDiscovery(req: {
     body: JSON.stringify(req),
   })
 }
+
+// ============================================================================
+// Phase 01: Live Synaptic Brain API
+// ============================================================================
+
+export function getSynapticInfo(): Promise<import('./types').SynapticInfo> {
+  return json(`${BASE}/synaptic/info`)
+}
+
+export function getSynapticState(
+  dimension: number = 16,
+  decay: number = 0.05,
+  seed: number = 42,
+): Promise<import('./types').SynapticNetworkState> {
+  return json(`${BASE}/synaptic/state?dimension=${dimension}&decay=${decay}&seed=${seed}`)
+}
+
+export function writeSynapticMemory(req: {
+  concept: string
+  value: string
+  importance?: number
+  strength?: number
+  decay?: number
+  update_strength?: number
+  memory_strength?: number
+  seed?: number
+  dimension?: number
+}): Promise<import('./types').SynapticNetworkState> {
+  return json(`${BASE}/synaptic/write`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function recallSynapticMemory(req: {
+  query_concept: string
+  expected_value?: string
+  measure?: string
+  top_k?: number
+  seed?: number
+  dimension?: number
+}): Promise<import('./types').SynapticNetworkState> {
+  return json(`${BASE}/synaptic/recall`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function decaySynapticBrain(
+  steps: number = 1,
+  decay: number = 0.05,
+): Promise<import('./types').SynapticNetworkState> {
+  return json(`${BASE}/synaptic/decay`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ steps, decay }),
+  })
+}
+
+export function resetSynapticBrain(
+  dimension: number = 16,
+  decay: number = 0.05,
+  seed: number = 42,
+): Promise<import('./types').SynapticNetworkState> {
+  return json(`${BASE}/synaptic/reset?dimension=${dimension}&decay=${decay}&seed=${seed}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  })
+}
+
+export function runSynapticScenario(
+  scenario: string,
+  dimension: number = 16,
+  decay: number = 0.05,
+  seed: number = 42,
+): Promise<import('./types').SynapticNetworkState> {
+  return json(`${BASE}/synaptic/scenario`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ scenario, dimension, decay, seed }),
+  })
+}
+
+export function getSynapticFromExperiment(
+  experimentId: string,
+  stepIdx: number,
+  displayDim: number = 16,
+): Promise<import('./types').SynapticNetworkState> {
+  return json(`${BASE}/synaptic/experiment/${encodeURIComponent(experimentId)}/step/${stepIdx}?display_dim=${displayDim}`)
+}

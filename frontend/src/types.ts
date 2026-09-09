@@ -197,6 +197,7 @@ export interface MemoryStrengthProfile {
   peak_strength: number
   final_strength: number
   timeline_strengths: number[]
+  history?: number[]
   decay_rate: number
   reinforcement_count: number
   pattern: 'EXPONENTIAL' | 'POWER_LAW' | 'LINEAR' | 'NO_DECAY'
@@ -281,6 +282,7 @@ export interface MemoryTrace {
   decay_rate: number
   reinforcement_count: number
   primary_competitor: string | null
+  influenced_memories?: Record<string, number>
 }
 
 export interface EventImpact {
@@ -1008,4 +1010,117 @@ export interface AgentCatalogEntry {
 export interface AgentCatalogResponse {
   total: number
   agents: AgentCatalogEntry[]
+}
+
+// ============================================================================
+// Phase 01: Live Synaptic Brain Types
+// ============================================================================
+
+export interface SynapticNeuron {
+  id: string
+  index: number
+  neuron_type: 'input_key' | 'output_value' | 'state_unit'
+  label: string
+  activation: number
+  baseline_activation: number
+  inflow_weight: number
+  outflow_weight: number
+  dominant_concepts: string[]
+}
+
+export interface SynapticConnection {
+  id: string
+  source: string
+  target: string
+  source_idx: number
+  target_idx: number
+  weight: number
+  weight_before: number
+  delta_weight: number
+  abs_weight: number
+  tier: 'weak' | 'medium' | 'strong'
+  polarity: 'excitatory' | 'inhibitory' | 'neutral'
+  plasticity_trace: number
+  last_update_timestep: number
+}
+
+export interface SynapticPathway {
+  active_key_indices: number[]
+  active_value_indices: number[]
+  active_synapse_ids: string[]
+  transmission_energy: number
+}
+
+export interface SynapticExplanation {
+  event_label: string
+  event_type: 'WRITE' | 'RECALL' | 'DECAY' | 'INIT'
+  active_units: number
+  synaptic_updates: number
+  mean_weight_change: number
+  max_weight_change: number
+  state_change_pct: number
+  norm_before: number
+  norm_after: number
+  write_gain: number
+  decay_applied: number
+  scientific_note: string
+}
+
+export interface SynapticRecallCandidate {
+  memory_id: string
+  concept: string
+  value: string
+  similarity: number
+}
+
+export interface SynapticRecallResult {
+  query_concept: string
+  predicted_value: string | null
+  confidence: number
+  ground_truth: string | null
+  is_correct: boolean | null
+  candidate_matches: SynapticRecallCandidate[]
+  fidelity: number
+  crosstalk_noise: number
+  readout_vector: number[]
+}
+
+export interface SynapticTimelineEvent {
+  step: number
+  event_type: string
+  label: string
+  matrix_norm: number
+  active_synapses: number
+  details: Record<string, unknown>
+}
+
+export interface SynapticNetworkState {
+  timestep: number
+  dimension: number
+  mechanism: string
+  total_synapses: number
+  active_synapses_count: number
+  mean_synaptic_weight: number
+  max_synaptic_weight: number
+  matrix_norm: number
+  sparsity: number
+  neurons: SynapticNeuron[]
+  synapses: SynapticConnection[]
+  last_pathway: SynapticPathway | null
+  last_explanation: SynapticExplanation | null
+  last_recall: SynapticRecallResult | null
+  history_timeline: SynapticTimelineEvent[]
+}
+
+export interface SynapticInfo {
+  title: string
+  topic: string
+  description: string
+  mathematical_model: {
+    hebbian_write: string
+    associative_recall: string
+    decay_rule: string
+    similarity_metric: string
+  }
+  disclaimer: string
 }

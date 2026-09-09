@@ -15,13 +15,11 @@ import {
   causalCreateScenario,
   causalEstimateCost,
   causalGetCascadeTrace,
-  causalGetCausalGraph,
   causalGetConflicts,
   causalGetCriticalWindows,
   causalGetFirstDivergence,
   causalGetLedger,
   causalGetMatrix,
-  causalGetQueue,
   causalGetRecoveryCurve,
   causalGetReplay,
   causalGetReport,
@@ -30,7 +28,6 @@ import {
   causalRegisterClaim,
   causalRunCounterfactual,
   causalRunMultiIntervention,
-  causalRunRecovery,
   causalRunSwap,
   causalTestEdge,
   causalCreateReport,
@@ -47,12 +44,6 @@ interface CausalScenario {
   strength?: number | null
   label: string
   created_at: string
-}
-
-interface CausalCounterfactual {
-  counterfactual_id: string
-  parent_experiment_id: string
-  divergence?: Record<string, unknown>
 }
 
 interface FirstDivergence {
@@ -175,7 +166,6 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
   const [edgeTgt, setEdgeTgt] = useState('')
   const [edgeResult, setEdgeResult] = useState<Record<string, unknown> | null>(null)
   const [recoveryCurve, setRecoveryCurve] = useState<Record<string, unknown> | null>(null)
-  const [temporalMap, setTemporalMap] = useState<Record<string, unknown> | null>(null)
 
   // ── Ledger & Claims state ──────────────────────────────────────────────────
   const [ledger, setLedger] = useState<CausalLedger | null>(null)
@@ -200,9 +190,9 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
   // ── Load scenarios on mount / experiment change ────────────────────────────
   useEffect(() => {
     if (!expId) return
-    causalListScenarios(expId).then(setScenarios).catch(() => {})
-    causalListReports(expId).then(setReports).catch(() => {})
-    causalGetLedger().then(setLedger).catch(() => {})
+    causalListScenarios(expId).then((res) => setScenarios(res as unknown as CausalScenario[])).catch(() => {})
+    causalListReports(expId).then((res) => setReports(res as unknown as CausalReport[])).catch(() => {})
+    causalGetLedger().then((res) => setLedger(res as unknown as CausalLedger)).catch(() => {})
   }, [expId])
 
   // ── Playback loop ──────────────────────────────────────────────────────────
@@ -250,7 +240,7 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
         label: scenarioLabel || `${intervention} ${targetMemory}`,
       })
       const list = await causalListScenarios(expId)
-      setScenarios(list)
+      setScenarios(list as unknown as CausalScenario[])
       setScenarioMsg({ ok: true, text: 'Scenario saved ✓' })
     } catch (e) {
       setScenarioMsg({ ok: false, text: String(e) })
@@ -274,7 +264,7 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
         timing: timing ? Number(timing) : undefined,
         strength: strength ? Number(strength) : undefined,
         label: scenarioLabel || `${intervention} ${targetMemory}`,
-      })
+      }) as { counterfactual?: { counterfactual_id?: string }; first_divergence?: { first_divergence_step?: number } }
       setCfId(r.counterfactual?.counterfactual_id ?? '')
       setScenarioMsg({ ok: true, text: `Counterfactual ready — divergence @ step ${r.first_divergence?.first_divergence_step ?? '?'}` })
       setPanel('replay')
@@ -338,8 +328,8 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
         causalGetReplay(expId, cfId),
         causalGetFirstDivergence(cfId),
       ])
-      setReplayFrames(replayData.frames ?? [])
-      setFirstDiv(divData)
+      setReplayFrames((replayData as { frames?: ReplayFrame[] }).frames ?? [])
+      setFirstDiv(divData as unknown as FirstDivergence)
       setReplayStep(0)
     } catch (e) {
       setReplayFrames([])
@@ -353,7 +343,7 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
     if (!expId || !graphMemory) return
     setGraphBusy(true)
     try {
-      const r = await causalGetCascadeTrace(expId, graphMemory, graphIntv)
+      const r = await causalGetCascadeTrace(expId, graphMemory, graphIntv) as { nodes?: CascadeNode[]; edges?: { source: string; target: string; strength: number }[] }
       setCascadeNodes(r.nodes ?? [])
       setCascadeEdges(r.edges ?? [])
     } catch {
@@ -405,8 +395,8 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
     setLedgerBusy(true)
     try {
       const [l, c] = await Promise.all([causalGetLedger(), causalGetConflicts()])
-      setLedger(l)
-      setConflicts(c)
+      setLedger(l as unknown as CausalLedger)
+      setConflicts(c as unknown as Record<string, unknown>[])
     } finally {
       setLedgerBusy(false)
     }
@@ -428,7 +418,7 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
         evidence_experiment_ids: [expId],
       })
       const l = await causalGetLedger()
-      setLedger(l)
+      setLedger(l as unknown as CausalLedger)
       setClaimMsg({ ok: true, text: 'Claim registered ✓' })
     } catch (e) {
       setClaimMsg({ ok: false, text: String(e) })
@@ -453,7 +443,7 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
         scenario: `Experiment ${expId}`,
       })
       const list = await causalListReports(expId)
-      setReports(list)
+      setReports(list as unknown as CausalReport[])
       setReportMsg({ ok: true, text: 'Report created ✓' })
     } catch (e) {
       setReportMsg({ ok: false, text: String(e) })
@@ -1234,7 +1224,7 @@ export const CausalWorkspace: React.FC<CausalWorkspaceProps> = ({
                       {String((selectedReport as Record<string,unknown>).confidence_level ?? '')}
                     </span>
                   </div>
-                  {(selectedReport as Record<string,unknown>).limitations && (
+                  {Boolean((selectedReport as Record<string,unknown>).limitations) && (
                     <div className="report-section">
                       <span className="report-key">LIMITATIONS</span>
                       <span className="report-val warn">{String((selectedReport as Record<string,unknown>).limitations)}</span>
