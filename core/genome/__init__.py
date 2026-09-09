@@ -1,0 +1,112 @@
+"""Phase 08: Memory Genome + Cascade Engine."""
+
+from .cascade import CascadeEngine
+from .centrality import CentralityAnalyzer, DependencyMatrixBuilder
+from .experiments import (
+    DoseResponseEngine,
+    MutationEngine,
+    PathDependenceEngine,
+    RecoveryEngine,
+)
+from .fragility import (
+    CriticalMemoryDetector,
+    FragilityAnalyzer,
+    RedundancyAnalyzer,
+)
+from .genome import (
+    LineageBuilder,
+    MemoryGenomeBuilder,
+    resolve_memory,
+)
+from .models import (
+    AssociationEntry,
+    CascadeEdge,
+    CascadeMap,
+    CascadeNode,
+    CompetitorEntry,
+    CriticalMemoryRank,
+    DependencyMatrix,
+    DoseResponseEvaluation,
+    DoseResponsePoint,
+    FragilityReport,
+    GenomeDNAStrip,
+    GenomeReport,
+    InfluenceScoreBreakdown,
+    MemoryCentralityRecord,
+    MemoryGenome,
+    MemoryLineageEdge,
+    MemoryLineageGraph,
+    MemoryLineageNode,
+    PathDependenceEvaluation,
+    RecoveryEvaluation,
+    RedundancyRecord,
+    ReinforcementRecord,
+    RetrievalRecord,
+    SandboxBranch,
+)
+from .reports import (
+    AutomaticResearchQuestionGenerator,
+    ReportGenerator,
+)
+from .sandbox import SandboxManager
+from .store import GenomeStore
+from .types import (
+    CascadeEffectType,
+    DoseResponsePattern,
+    FragilityClassification,
+    GenomeInterventionType,
+    GenomeSection,
+    OrderSensitivity,
+    RecoveryStatus,
+)
+
+__all__ = [
+    "CascadeEffectType",
+    "DoseResponsePattern",
+    "FragilityClassification",
+    "RecoveryStatus",
+    "OrderSensitivity",
+    "GenomeSection",
+    "GenomeInterventionType",
+    "AssociationEntry",
+    "CompetitorEntry",
+    "ReinforcementRecord",
+    "RetrievalRecord",
+    "GenomeDNAStrip",
+    "MemoryGenome",
+    "MemoryLineageNode",
+    "MemoryLineageEdge",
+    "MemoryLineageGraph",
+    "CascadeNode",
+    "CascadeEdge",
+    "CascadeMap",
+    "InfluenceScoreBreakdown",
+    "MemoryCentralityRecord",
+    "CriticalMemoryRank",
+    "FragilityReport",
+    "RedundancyRecord",
+    "DoseResponsePoint",
+    "DoseResponseEvaluation",
+    "RecoveryEvaluation",
+    "PathDependenceEvaluation",
+    "SandboxBranch",
+    "DependencyMatrix",
+    "GenomeReport",
+    "resolve_memory",
+    "MemoryGenomeBuilder",
+    "LineageBuilder",
+    "CascadeEngine",
+    "CentralityAnalyzer",
+    "DependencyMatrixBuilder",
+    "CriticalMemoryDetector",
+    "FragilityAnalyzer",
+    "RedundancyAnalyzer",
+    "DoseResponseEngine",
+    "RecoveryEngine",
+    "PathDependenceEngine",
+    "MutationEngine",
+    "SandboxManager",
+    "ReportGenerator",
+    "AutomaticResearchQuestionGenerator",
+    "GenomeStore",
+]

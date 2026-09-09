@@ -1,0 +1,1878 @@
+<USER_REQUEST>
+PHASE 10 — CAUSAL MEMORY LAB
+============================
+
+IMPORTANT:
+DO NOT rewrite, remove, simplify, or break ANY functionality
+from Phase 1–9.
+
+This phase must EXTEND the existing Neural Archaeology system.
+
+Do not create fake visualizations.
+
+Every visualization, metric, timeline, causal relationship,
+simulation result, and explanation must come from actual
+backend data or clearly labeled synthetic/demo data.
+
+DO NOT start Phase 11.
+
+========================================================
+CORE IDEA
+========================================================
+
+Build the:
+
+CAUSAL MEMORY LAB
+
+The researcher should be able to ask:
+
+"What would have happened if this memory had never existed?"
+
+"What if this memory had been strengthened?"
+
+"What if it arrived earlier?"
+
+"What if two memories were swapped?"
+
+"What if the intervention happened at a different moment?"
+
+"What caused the cascade?"
+
+"What is the earliest point at which the system diverged?"
+
+The system should reconstruct and compare these alternate
+trajectories.
+
+This is NOT ordinary analytics.
+
+The key concept is:
+
+OBSERVED WORLD
+        vs
+COUNTERFACTUAL WORLD
+
+
+========================================================
+1. CAUSAL MEMORY LAB
+========================================================
+
+Create a new major application section:
+
+CAUSAL MEMORY LAB
+
+
+Main interface:
+
+┌─────────────────────────────────────────────────────┐
+│ CAUSAL MEMORY LAB                                   │
+│                                                     │
+│ Original                 Counterfactual             │
+│ ─────────                ─────────────               │
+│ Experiment 42            Modified Experiment        │
+│                                                     │
+│        STATE TRAJECTORY COMPARISON                  │
+│                                                     │
+│ Original ────────────────────────────────            │
+│ Counter ────────────────────────────────            │
+│                         ↑                           │
+│                    FIRST DIVERGENCE                 │
+│                                                     │
+└─────────────────────────────────────────────────────┘
+
+
+========================================================
+2. CAUSAL SCENARIO BUILDER
+========================================================
+
+Create:
+
+SCENARIO BUILDER
+
+
+User selects:
+
+TARGET MEMORY
+
+INTERVENTION
+
+TIMING
+
+STRENGTH
+
+DURATION
+
+
+Intervention types:
+
+REMOVE
+
+ADD
+
+STRENGTHEN
+
+WEAKEN
+
+DELAY
+
+ACCELERATE
+
+FREEZE
+
+RESTORE
+
+DUPLICATE
+
+REPLACE
+
+ISOLATE
+
+
+========================================================
+3. TEMPORAL INTERVENTION
+========================================================
+
+This is a key feature.
+
+Allow interventions at different moments.
+
+Example:
+
+Remove M17 at:
+
+t = 10
+t = 20
+t = 30
+t = 40
+
+
+Then compare outcomes.
+
+Show:
+
+INTERVENTION TIMING SENSITIVITY
+
+
+Example:
+
+Removal at t=10 → large cascade
+
+Removal at t=20 → medium cascade
+
+Removal at t=30 → weak cascade
+
+Removal at t=40 → negligible
+
+
+This allows the system to identify:
+
+CRITICAL WINDOWS
+
+
+========================================================
+4. CRITICAL WINDOW DETECTOR
+========================================================
+
+Automatically detect periods where a memory intervention
+has unusually large downstream impact.
+
+Example:
+
+MEMORY:
+
+M17
+
+CRITICAL WINDOW:
+
+t = 18–27
+
+
+During this period:
+
+small intervention
+→ large state divergence
+
+
+Show:
+
+EARLY
+STABLE
+SENSITIVE
+RECOVERY
+
+
+Do not call this a universal causal law.
+
+Use:
+
+"causal sensitivity within this experiment."
+
+
+========================================================
+5. FIRST DIVERGENCE DETECTOR
+========================================================
+
+For every counterfactual comparison:
+
+find the earliest measurable point where:
+
+Original State ≠ Counterfactual State
+
+
+Display:
+
+FIRST DIVERGENCE
+
+t = 37
+
+
+Then:
+
+CAUSE CANDIDATE
+
+M17 intervention
+
+
+Then show:
+
+DIVERGENCE MAGNITUDE
+
+
+========================================================
+6. DIVERGENCE TRACE
+========================================================
+
+Create an interactive causal timeline.
+
+Example:
+
+t=32
+│
+t=35
+│
+t=37 ← FIRST DIVERGENCE
+│
+t=39
+│
+t=42
+│
+t=45
+│
+t=51 ← CASCADE
+│
+t=60 ← FINAL OUTCOME
+
+
+Click any point.
+
+Show:
+
+state before
+state after
+changed memories
+changed associations
+changed outputs
+
+
+========================================================
+7. CASCADE RECONSTRUCTION
+========================================================
+
+Use the existing cascade engine from previous phases.
+
+Extend it so that the user can see:
+
+INITIAL INTERVENTION
+        ↓
+MEMORY M17
+        ↓
+ASSOCIATION A4
+        ↓
+MEMORY M22
+        ↓
+STATE CHANGE
+        ↓
+MEMORY M31
+        ↓
+OUTPUT CHANGE
+
+
+Each node should contain:
+
+time
+magnitude
+direction
+evidence
+
+
+========================================================
+8. CAUSAL GRAPH
+========================================================
+
+Create an interactive graph:
+
+MEMORY
+  ↓
+STATE
+  ↓
+MEMORY
+  ↓
+ASSOCIATION
+  ↓
+STATE
+  ↓
+OUTPUT
+
+
+Edges should contain measurable evidence.
+
+Example:
+
+M17 → M22
+
+effect:
++0.41
+
+
+Never create edges merely because two nodes
+are visually correlated.
+
+
+========================================================
+9. CAUSAL EDGE TESTING
+========================================================
+
+Allow users to click an edge:
+
+M17 → M22
+
+
+Then:
+
+TEST CAUSAL EDGE
+
+
+Run an intervention if supported.
+
+Compare:
+
+with edge
+
+without edge
+
+
+Show:
+
+Observed difference
+
+Counterfactual difference
+
+
+Status:
+
+SUPPORTED
+
+WEAK
+
+INCONCLUSIVE
+
+CONTRADICTED
+
+
+========================================================
+10. CAUSALITY VS CORRELATION
+========================================================
+
+Create an educational but functional visual.
+
+Example:
+
+CORRELATED
+
+M17 ───── M22
+
+
+Then:
+
+INTERVENTION
+
+Remove M17
+
+
+If M22 changes:
+
+CAUSAL EVIDENCE INCREASES
+
+
+If M22 does not change:
+
+CORRELATION MAY NOT REPRESENT DIRECT DEPENDENCE
+
+
+Use careful scientific wording.
+
+
+========================================================
+11. MULTI-INTERVENTION EXPERIMENTS
+========================================================
+
+Allow:
+
+M17 REMOVE
+
++
+
+M22 STRENGTHEN
+
++
+
+M31 FREEZE
+
+
+Then run a controlled counterfactual.
+
+Compare:
+
+single intervention
+
+vs
+
+combined intervention
+
+
+Detect:
+
+INTERACTION EFFECT
+
+
+========================================================
+12. INTERACTION EFFECT DETECTOR
+========================================================
+
+Example:
+
+Effect of removing M17:
+
+-20%
+
+
+Effect of removing M22:
+
+-15%
+
+
+Expected combined effect:
+
+-35%
+
+
+Observed combined effect:
+
+-62%
+
+
+Flag:
+
+NON-LINEAR INTERACTION
+
+
+Show:
+
+Observed interaction:
+-27%
+
+
+This should be calculated from actual runs.
+
+
+========================================================
+13. SYNERGY / ANTAGONISM
+========================================================
+
+Classify interactions:
+
+SYNERGY
+
+combined effect > expected
+
+
+ANTAGONISM
+
+combined effect < expected
+
+
+ADDITIVE
+
+combined effect ≈ expected
+
+
+UNKNOWN
+
+insufficient evidence
+
+
+========================================================
+14. MEMORY SWAP EXPERIMENT
+========================================================
+
+Create a unique experiment:
+
+MEMORY SWAP
+
+
+Swap:
+
+Memory A
+
+with
+
+Memory B
+
+
+while keeping other conditions
+as constant as possible.
+
+
+Compare:
+
+original
+swapped
+
+
+Analyze:
+
+state trajectory
+retrieval
+cascade
+output
+stability
+
+
+This tests whether behavior depends on:
+
+identity
+
+position
+
+association structure
+
+or other measurable properties.
+
+
+========================================================
+15. MEMORY COUNTERFACTUAL LIBRARY
+========================================================
+
+Create presets:
+
+"What if this memory never existed?"
+
+"What if this memory appeared earlier?"
+
+"What if this memory were twice as strong?"
+
+"What if this memory were isolated?"
+
+"What if this memory were replaced?"
+
+"What if competing memories disappeared?"
+
+"What if the memory recovered after deletion?"
+
+
+Each preset should automatically construct
+a valid experiment configuration.
+
+
+========================================================
+16. CAUSAL SCENARIO COMPILER
+========================================================
+
+Create backend:
+
+CausalScenarioCompiler
+
+
+Input:
+
+experiment
+target
+intervention
+timing
+strength
+
+
+Output:
+
+validated counterfactual experiment
+
+
+Validate:
+
+target exists
+intervention is legal
+timing is valid
+required state exists
+resource budget allows execution
+
+
+========================================================
+17. CAUSAL EXPERIMENT QUEUE
+========================================================
+
+Create:
+
+CAUSAL EXPERIMENT QUEUE
+
+
+Each item:
+
+Experiment ID
+Scenario
+Estimated cost
+Status
+Result
+
+
+Statuses:
+
+QUEUED
+
+RUNNING
+
+COMPLETED
+
+FAILED
+
+CANCELLED
+
+
+========================================================
+18. RESOURCE-AWARE EXECUTION
+========================================================
+
+Reuse Phase 9 resource guards.
+
+Before execution:
+
+show:
+
+Runs required
+
+Estimated compute
+
+Estimated memory
+
+Estimated time
+
+
+Never silently launch huge experiment batches.
+
+
+========================================================
+19. CAUSALITY MATRIX
+========================================================
+
+Create a matrix:
+
+             M17   M22   M31   M44
+
+M17           —    .81   .04   .32
+
+M22          .67    —    .55   .08
+
+M31          .12   .49    —    .71
+
+
+Important:
+
+These values MUST represent actual measured
+intervention effects or another clearly labeled
+causal metric.
+
+Do NOT populate with fake random numbers.
+
+
+========================================================
+20. CAUSALITY HEATMAP
+========================================================
+
+Allow:
+
+MEMORY → MEMORY
+
+MEMORY → STATE
+
+MEMORY → OUTPUT
+
+
+Filters:
+
+time window
+
+experiment
+
+intervention type
+
+minimum effect
+
+
+========================================================
+21. TEMPORAL CAUSALITY MAP
+========================================================
+
+Add a second dimension:
+
+TIME
+
+
+Visualize:
+
+Memory
++
+Time
++
+Effect
+
+
+Example:
+
+M17
+
+t10  ░
+t20  ░
+t30  █
+t40  ███
+t50  ██
+t60  ░
+
+
+This makes critical windows immediately visible.
+
+
+========================================================
+22. CAUSALITY CONFIDENCE
+========================================================
+
+Do NOT show arbitrary AI confidence.
+
+Instead show:
+
+NUMBER OF INTERVENTIONS
+
+REPLICATIONS
+
+EFFECT CONSISTENCY
+
+BASELINE QUALITY
+
+ALTERNATIVE EXPLANATIONS
+
+
+Example:
+
+Evidence quality
+
+Interventions: 6
+
+Replications: 3
+
+Effect consistency: High
+
+Alternatives tested: 2
+
+Status:
+SUPPORTED WITHIN EXPERIMENT
+
+
+========================================================
+23. ALTERNATIVE CAUSAL PATHS
+========================================================
+
+If:
+
+M17 → M22
+
+and:
+
+M17 → M31 → M22
+
+
+exist,
+
+show both.
+
+Then test:
+
+DIRECT PATH
+
+INDIRECT PATH
+
+
+Do not assume the shortest path is causal.
+
+
+========================================================
+24. MEDIATION ANALYSIS
+========================================================
+
+Where the data supports it:
+
+M17
+ ↓
+M31
+ ↓
+M22
+
+
+Test:
+
+Does M31 mediate the effect of M17 on M22?
+
+
+Display:
+
+TOTAL EFFECT
+
+DIRECT EFFECT
+
+INDIRECT EFFECT
+
+
+If unavailable:
+
+show:
+
+"Insufficient data for mediation analysis."
+
+
+========================================================
+25. CAUSAL BOTTLENECK DETECTOR
+========================================================
+
+Detect memories that sit on many measured
+causal paths.
+
+Example:
+
+M17
+
+↓
+
+M31
+
+↓
+
+M42
+
+M17 affects:
+
+17 downstream nodes
+
+5 major pathways
+
+
+Flag:
+
+CAUSAL BOTTLENECK
+
+
+Then allow:
+
+REMOVE BOTTLENECK
+
+
+Run counterfactual.
+
+
+========================================================
+26. CAUSAL FRAGILITY
+========================================================
+
+Measure:
+
+How much does system behavior depend
+on a particular memory?
+
+
+Example:
+
+M17
+
+Removal effect:
+82%
+
+Recovery:
+Low
+
+Alternative paths:
+2
+
+
+Classify:
+
+FRAGILE
+
+MODERATELY DEPENDENT
+
+ROBUST
+
+
+========================================================
+27. RECOVERY EXPERIMENT
+========================================================
+
+Create:
+
+DELETE → WAIT → RESTORE
+
+
+Measure:
+
+immediate effect
+
+recovery speed
+
+final recovery
+
+path recovery
+
+
+Show:
+
+PRE-DELETE
+
+POST-DELETE
+
+RECOVERY
+
+FINAL
+
+
+========================================================
+28. MEMORY RECOVERY CURVE
+========================================================
+
+Plot:
+
+time
+
+vs
+
+memory strength
+
+
+Compare:
+
+original
+
+deleted
+
+restored
+
+
+Detect:
+
+full recovery
+
+partial recovery
+
+failed recovery
+
+
+========================================================
+29. CAUSAL REPLAY
+========================================================
+
+Extend Phase 9 replay.
+
+Allow:
+
+PLAY ORIGINAL
+
+PLAY COUNTERFACTUAL
+
+PLAY BOTH
+
+
+Synchronized playback.
+
+At the first divergence:
+
+pause both.
+
+Display:
+
+WHY DID THEY DIVERGE?
+
+
+Then allow:
+
+CONTINUE CASCADE
+
+
+========================================================
+30. TIME SCRUBBER
+========================================================
+
+Create a premium timeline control.
+
+User can scrub:
+
+t0 → tN
+
+
+At each point:
+
+memory state
+
+causal graph
+
+active associations
+
+divergence
+
+output
+
+
+update simultaneously.
+
+
+========================================================
+31. SPLIT-SCREEN MODE
+========================================================
+
+Create:
+
+ORIGINAL
+
+vs
+
+COUNTERFACTUAL
+
+
+Synchronize:
+
+timeline
+
+state
+
+graph
+
+metrics
+
+
+When user moves cursor on one:
+
+both views move together.
+
+
+========================================================
+32. CAUSALITY INVESTIGATION MODE
+========================================================
+
+Create a dedicated mode:
+
+INVESTIGATE
+
+
+User selects a memory.
+
+System automatically shows:
+
+1. strongest downstream effects
+2. strongest upstream influences
+3. intervention history
+4. critical windows
+5. causal candidates
+6. counterfactual results
+7. recovery behavior
+8. competing explanations
+
+
+========================================================
+33. CAUSALITY REPORT
+========================================================
+
+Generate:
+
+CAUSAL INVESTIGATION REPORT
+
+
+Sections:
+
+Question
+
+Scenario
+
+Baseline
+
+Intervention
+
+Temporal window
+
+First divergence
+
+Cascade
+
+Effect
+
+Alternative paths
+
+Replication
+
+Limitations
+
+Conclusion
+
+
+Use cautious scientific wording.
+
+
+========================================================
+34. CAUSAL DISCOVERY INTEGRATION
+========================================================
+
+Integrate directly with Phase 9.
+
+If Causal Lab finds an interesting effect:
+
+send it to:
+
+AUTONOMOUS DISCOVERY ENGINE
+
+
+Example:
+
+Causal Lab:
+
+"Removing M17 during t=20–30 produces
+unusually large downstream divergence."
+
+
+Discovery Engine:
+
+creates:
+
+Observation
+
+Question
+
+Hypotheses
+
+Replication
+
+
+Thus:
+
+PHASE 9 DISCOVERY
+
+↕️
+
+PHASE 10 CAUSAL LAB
+
+
+========================================================
+35. DISCOVERY → CAUSAL TEST
+========================================================
+
+Every Phase 9 discovery should have:
+
+[ TEST CAUSALLY ]
+
+
+Clicking it automatically:
+
+creates causal scenario
+selects relevant intervention
+constructs baseline
+creates counterfactual
+queues experiment
+
+
+========================================================
+36. CAUSAL TEST → DISCOVERY
+========================================================
+
+Every strong Phase 10 finding should have:
+
+[ INVESTIGATE FURTHER ]
+
+
+This sends it back to:
+
+Autonomous Discovery.
+
+
+Create a continuous loop:
+
+DISCOVERY
+ ↓
+CAUSAL TEST
+ ↓
+COUNTERFACTUAL
+ ↓
+EVIDENCE
+ ↓
+DISCOVERY
+
+
+========================================================
+37. CAUSALITY LEDGER
+========================================================
+
+Create:
+
+CAUSALITY LEDGER
+
+
+Every causal claim gets an entry.
+
+Example:
+
+CLAIM #017
+
+M17 influences M22.
+
+Evidence:
+
+Experiment 42
+Experiment 47
+Experiment 51
+
+Interventions:
+
+3
+
+Replications:
+
+3
+
+Status:
+
+SUPPORTED WITHIN TESTED CONDITIONS
+
+
+This prevents unsupported claims from
+floating around the system.
+
+
+========================================================
+38. CLAIM VERSIONING
+========================================================
+
+If new evidence contradicts an old claim:
+
+DO NOT overwrite it.
+
+Create:
+
+CLAIM #017 v1
+
+then:
+
+CLAIM #017 v2
+
+
+Show:
+
+what changed
+
+why changed
+
+which evidence changed it
+
+
+This creates scientific history.
+
+
+========================================================
+39. CONTRADICTION ENGINE
+========================================================
+
+If:
+
+Experiment A:
+
+M17 strongly affects M22
+
+
+Experiment B:
+
+M17 has little effect on M22
+
+
+Automatically create:
+
+CAUSALITY CONFLICT
+
+
+Compare:
+
+timing
+state
+configuration
+inputs
+memory topology
+intervention strength
+
+
+Suggest controlled tests.
+
+
+========================================================
+40. CAUSALITY MAP OVER TIME
+========================================================
+
+Allow researchers to move through time
+and watch causal relationships appear/disappear.
+
+Example:
+
+t=10
+
+M17 → M22
+
+
+t=30
+
+M17 → M31 → M22
+
+
+t=50
+
+M22 → M44
+
+
+This should visually demonstrate that
+causal structure can be dynamic.
+
+
+========================================================
+41. RESEARCHER CONTROL
+========================================================
+
+Add:
+
+EXPERIMENT MANUAL MODE
+
+and:
+
+ASSISTED MODE
+
+Manual:
+
+researcher controls every intervention.
+
+Assisted:
+
+system proposes scenarios.
+
+Autonomous:
+
+Phase 9 discovery engine proposes and
+queues scenarios within limits.
+
+
+========================================================
+42. SAFETY / RESOURCE CONTROLS
+========================================================
+
+Require:
+
+experiment scope
+
+compute budget
+
+maximum scenarios
+
+maximum recursion depth
+
+maximum runtime
+
+
+Provide:
+
+PAUSE
+
+STOP
+
+CLEAR QUEUE
+
+
+========================================================
+43. PREMIUM UI
+========================================================
+
+This section must feel visually different
+from a conventional dashboard.
+
+Design language:
+
+dark research laboratory
+
+large typography
+
+high information density
+
+thin technical lines
+
+animated state transitions
+
+interactive timelines
+
+causal graph
+
+split-screen counterfactuals
+
+subtle grid
+
+minimal cards
+
+strong whitespace
+
+
+DO NOT make everything a card.
+
+Use:
+
+full-screen canvases
+
+graphs
+
+timelines
+
+layers
+
+side panels
+
+floating controls
+
+
+========================================================
+44. HERO EXPERIENCE
+========================================================
+
+When entering Causal Memory Lab:
+
+show:
+
+"WHAT IF?"
+
+in large display typography.
+
+
+Then:
+
+SELECT A MEMORY
+
+↓
+
+CHOOSE AN INTERVENTION
+
+↓
+
+RUN COUNTERFACTUAL
+
+
+After execution:
+
+ORIGINAL
+
+vs
+
+ALTERNATE
+
+
+Then automatically:
+
+"THE TWO WORLDS FIRST DIVERGED AT t=37."
+
+
+This should be the signature visual moment.
+
+
+========================================================
+45. WOW MOMENT
+========================================================
+
+Create an interactive:
+
+BUTTERFLY EFFECT
+
+
+User performs a tiny intervention:
+
+M17 strength:
+
+100%
+→
+97%
+
+
+System runs the counterfactual.
+
+
+If supported by actual computation:
+
+show downstream divergence growing
+through the timeline.
+
+
+Example:
+
+97%
+ ↓
+99%
+ ↓
+96%
+ ↓
+91%
+ ↓
+74%
+ ↓
+51%
+
+
+Then:
+
+"SMALL INITIAL CHANGE"
+
+becomes:
+
+"LARGE DOWNSTREAM DIVERGENCE"
+
+
+Only display this when the actual data
+supports the effect.
+
+
+========================================================
+46. CAUSAL EXPERIMENT COMPARISON
+========================================================
+
+Allow up to:
+
+4 scenarios
+
+
+Example:
+
+ORIGINAL
+
+REMOVE M17
+
+WEAKEN M17
+
+DELAY M17
+
+
+Synchronize all four timelines.
+
+
+This should be extremely visually impressive.
+
+
+========================================================
+47. API
+========================================================
+
+Implement:
+
+CREATE_CAUSAL_SCENARIO
+
+VALIDATE_CAUSAL_SCENARIO
+
+ESTIMATE_CAUSAL_COST
+
+RUN_COUNTERFACTUAL
+
+GET_DIVERGENCE
+
+GET_FIRST_DIVERGENCE
+
+GET_CASCADE_TRACE
+
+GET_CRITICAL_WINDOWS
+
+GET_CAUSAL_GRAPH
+
+GET_CAUSAL_EDGE
+
+TEST_CAUSAL_EDGE
+
+RUN_MULTI_INTERVENTION
+
+CALCULATE_INTERACTION_EFFECT
+
+RUN_MEMORY_SWAP
+
+RUN_RECOVERY_EXPERIMENT
+
+GET_RECOVERY_CURVE
+
+GET_CAUSALITY_MATRIX
+
+GET_CAUSALITY_LEDGER
+
+GET_CAUSAL_CLAIM
+
+GET_CAUSAL_CONFLICTS
+
+CREATE_CAUSAL_REPORT
+
+REPLAY_CAUSAL_EXPERIMENT
+
+
+========================================================
+48. DATA INTEGRITY
+========================================================
+
+Every counterfactual must preserve:
+
+original experiment ID
+
+modified parameters
+
+intervention timestamp
+
+intervention target
+
+random seed where applicable
+
+model/configuration
+
+analysis version
+
+resource usage
+
+result
+
+provenance
+
+
+========================================================
+49. TESTING
+========================================================
+
+Test:
+
+scenario validation
+
+intervention timing
+
+counterfactual execution
+
+first divergence detection
+
+cascade reconstruction
+
+critical window detection
+
+multi-intervention
+
+interaction effects
+
+memory swap
+
+recovery
+
+causal graph
+
+causal edge testing
+
+conflict detection
+
+claim versioning
+
+provenance
+
+resource limits
+
+pause/stop
+
+replay
+
+
+========================================================
+50. DEMONSTRATION
+========================================================
+
+Create one polished end-to-end demonstration.
+
+START:
+
+Open experiment.
+
+↓
+
+Select:
+
+Memory M17
+
+↓
+
+"What if M17 were weakened by 5% at t=20?"
+
+↓
+
+Run counterfactual.
+
+↓
+
+Display synchronized:
+
+ORIGINAL
+
+COUNTERFACTUAL
+
+↓
+
+Detect:
+
+FIRST DIVERGENCE
+
+↓
+
+Trace:
+
+M17
+ ↓
+M22
+ ↓
+M31
+ ↓
+M42
+
+↓
+
+Display:
+
+CASCADE AMPLIFICATION
+
+↓
+
+Run replication.
+
+↓
+
+Compare results.
+
+↓
+
+Add evidence to:
+
+CAUSALITY LEDGER
+
+↓
+
+Create:
+
+CAUSAL DISCOVERY
+
+↓
+
+Send to:
+
+AUTONOMOUS DISCOVERY ENGINE
+
+
+========================================================
+51. FINAL PRODUCT EXPERIENCE
+========================================================
+
+After Phase 10, the user should be able to do:
+
+Experiment
+    ↓
+Observe
+    ↓
+Discover
+    ↓
+Ask "Why?"
+    ↓
+Create counterfactual
+    ↓
+Manipulate memory
+    ↓
+Watch alternate trajectory
+    ↓
+Find first divergence
+    ↓
+Trace cascade
+    ↓
+Test causal hypotheses
+    ↓
+Replicate
+    ↓
+Record evidence
+    ↓
+Update discovery
+
+
+The product should now feel like:
+
+AN AI MEMORY FORENSICS + CAUSAL EXPERIMENTATION LAB.
+
+
+NOT:
+
+"A dashboard."
+
+NOT:
+
+"An LLM wrapper."
+
+NOT:
+
+"A chatbot."
+
+NOT:
+
+"A generic AI analytics platform."
+
+
+========================================================
+52. COMPLETION
+========================================================
+
+Implement Phase 10 completely.
+
+Preserve all Phase 1–9 functionality.
+
+Do not start Phase 11.
+
+At completion report:
+
+1. Files created
+2. Files modified
+3. Causal Memory Lab architecture
+4. Scenario builder
+5. Counterfactual engine integration
+6. Temporal intervention system
+7. First divergence detector
+8. Cascade reconstruction
+9. Causal graph
+10. Critical window detector
+11. Multi-intervention experiments
+12. Interaction analysis
+13. Recovery experiments
+14. Causality ledger
+15. Claim versioning
+16. Contradiction engine
+17. Phase 9 integration
+18. APIs
+19. Tests passed
+20. Demo completed
+21. Known limitations
+
+STOP.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-08T22:27:12+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\User\OneDrive\Desktop\pathway\tests\test_agency_end_to_end_demo.py (LANGUAGE_PYTHON)
+Cursor is on line: 98
+Other open documents:
+- c:\Users\User\OneDrive\Desktop\pathway\tests\test_agency_end_to_end_demo.py (LANGUAGE_PYTHON)
+</ADDITIONAL_METADATA>

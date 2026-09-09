@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Local data (generated artifacts stay out of git; schemas live in /data and /experiments)
+data/*.json
+experiments/*.json
+!experiments/.gitkeep
+!data/.gitkeep
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store

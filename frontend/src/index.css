@@ -1,0 +1,495 @@
+/* ==========================================================================
+   NEURAL ARCHAEOLOGY — Research Instrument Design System
+   Philosophy: 80% restraint, 20% spectacle.
+   Aesthetic: Scientific Visualization × Neuroscience Lab × Forensic Tool
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@400;600;700&display=swap');
+
+:root {
+  /* ── Tonal Depth Palette ─────────────────────────────────────── */
+  --bg-space:    #050607;   /* deepest void */
+  --bg-void:     #080a0d;   /* primary background */
+  --bg-canvas:   #0d1014;   /* workspace surfaces */
+  --bg-surface:  #10141a;   /* elevated panels */
+  --bg-elevated: #161c24;   /* cards, drawers */
+  --bg-muted:    #1c2430;   /* subtle containers */
+
+  /* ── Border Hierarchy ────────────────────────────────────────── */
+  --border-deep:   rgba(255,255,255,0.03);
+  --border-subtle: rgba(255,255,255,0.06);
+  --border-muted:  rgba(255,255,255,0.09);
+  --border-faint:  rgba(255,255,255,0.13);
+  --border-clear:  rgba(255,255,255,0.18);
+
+  /* ── Editorial Text Hierarchy ────────────────────────────────── */
+  --text-primary:   #f0f2f5;  /* warm white, not aggressive */
+  --text-secondary: #8a9bb0;  /* cool mid-gray */
+  --text-muted:     #4f6070;  /* quieter metadata */
+  --text-faint:     #2a3540;  /* near-invisible structure */
+  --text-inverse:   #080a0d;
+
+  /* ── Restrained Accent System (rare, semantic) ───────────────── */
+  /* Primary: ice-blue — used < 5% of surface area */
+  --accent:          #38bdf8;
+  --accent-dim:      rgba(56, 189, 248, 0.10);
+  --accent-glow:     rgba(56, 189, 248, 0.20);
+  --accent-border:   rgba(56, 189, 248, 0.25);
+
+  /* Semantic: Amber = intervention/uncertainty */
+  --amber:           #f59e0b;
+  --amber-dim:       rgba(245, 158, 11, 0.10);
+  --amber-border:    rgba(245, 158, 11, 0.25);
+
+  /* Semantic: Crimson = destruction/contradiction */
+  --crimson:         #f43f5e;
+  --crimson-dim:     rgba(244, 63, 94, 0.10);
+  --crimson-border:  rgba(244, 63, 94, 0.25);
+
+  /* Semantic: Emerald = stable/verified */
+  --emerald:         #10b981;
+  --emerald-dim:     rgba(16, 185, 129, 0.10);
+  --emerald-border:  rgba(16, 185, 129, 0.25);
+
+  /* Semantic: Violet = counterfactual/alternate */
+  --violet:          #8b5cf6;
+  --violet-dim:      rgba(139, 92, 246, 0.10);
+  --violet-border:   rgba(139, 92, 246, 0.25);
+
+  /* ── Typography ──────────────────────────────────────────────── */
+  --font-sans:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', 'SF Mono', Menlo, Monaco, Consolas, monospace;
+  --font-display: 'Sora', 'Inter', sans-serif;
+
+  /* ── Spatial Dimensions ──────────────────────────────────────── */
+  --topbar-h:   52px;
+  --rail-w:     52px;          /* collapsed */
+  --rail-w-exp: 220px;         /* expanded on hover */
+  --drawer-w:   400px;
+
+  /* ── Motion ──────────────────────────────────────────────────── */
+  --ease-out:  cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-fast:  120ms;
+  --dur-med:   240ms;
+  --dur-slow:  380ms;
+}
+
+/* ── Reset ────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg-void);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Scrollbars ───────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-muted); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-faint); }
+
+/* ── Buttons (Base Reset) ─────────────────────────────────────────── */
+button {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  cursor: pointer;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 6px 14px;
+  border-radius: 3px;
+  transition: background var(--dur-fast) ease, border-color var(--dur-fast) ease, color var(--dur-fast) ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  user-select: none;
+  white-space: nowrap;
+}
+
+button:hover:not(:disabled) {
+  background: var(--bg-elevated);
+  border-color: var(--border-faint);
+  color: var(--text-primary);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
+  opacity: 0.85;
+}
+
+button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Button variants — intentionally restrained */
+.btn-primary {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: var(--accent);
+}
+
+.btn-amber {
+  background: var(--amber-dim);
+  border-color: var(--amber-border);
+  color: var(--amber);
+}
+
+.btn-crimson {
+  background: var(--crimson-dim);
+  border-color: var(--crimson-border);
+  color: var(--crimson);
+}
+
+.btn-violet {
+  background: var(--violet-dim);
+  border-color: var(--violet-border);
+  color: var(--violet);
+}
+
+.btn-emerald {
+  background: var(--emerald-dim);
+  border-color: var(--emerald-border);
+  color: var(--emerald);
+}
+
+.btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+  padding: 4px 8px;
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bg-elevated);
+  border-color: var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+/* ── Form Inputs ──────────────────────────────────────────────────── */
+input, select, textarea {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 7px 12px;
+  border-radius: 3px;
+  outline: none;
+  transition: border-color var(--dur-fast) ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent-border);
+  box-shadow: 0 0 0 2px var(--accent-dim);
+}
+
+select { cursor: pointer; }
+
+/* ── Typography Utilities ─────────────────────────────────────────── */
+.mono     { font-family: var(--font-mono); }
+.display  { font-family: var(--font-display); }
+
+.text-primary   { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-muted     { color: var(--text-muted); }
+.text-accent    { color: var(--accent); }
+.text-amber     { color: var(--amber); }
+.text-crimson   { color: var(--crimson); }
+.text-emerald   { color: var(--emerald); }
+.text-violet    { color: var(--violet); }
+
+/* ── Status Dot ───────────────────────────────────────────────────── */
+.status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.status-dot.live {
+  background: var(--emerald);
+  box-shadow: 0 0 5px var(--emerald);
+  animation: status-pulse 2.4s infinite ease-in-out;
+}
+.status-dot.busy {
+  background: var(--amber);
+  animation: status-pulse 0.9s infinite ease-in-out;
+}
+.status-dot.error { background: var(--crimson); }
+
+@keyframes status-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.4; transform: scale(0.75); }
+}
+
+/* ── Metric Badge ─────────────────────────────────────────────────── */
+.metric-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  padding: 2px 7px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.metric-badge.accent  { border-color: var(--accent-border); color: var(--accent); }
+.metric-badge.emerald { border-color: var(--emerald-border); color: var(--emerald); }
+.metric-badge.amber   { border-color: var(--amber-border); color: var(--amber); }
+.metric-badge.crimson { border-color: var(--crimson-border); color: var(--crimson); }
+.metric-badge.violet  { border-color: var(--violet-border); color: var(--violet); }
+
+/* ── Global Layout ────────────────────────────────────────────────── */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100vh;
+  background: var(--bg-void);
+}
+
+.workspace-layout {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - var(--topbar-h));
+  overflow: hidden;
+}
+
+.main-canvas {
+  flex: 1;
+  height: 100%;
+  overflow-y: auto;
+  position: relative;
+}
+
+/* ── Empty State ──────────────────────────────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 24px;
+  opacity: 0.3;
+}
+
+.empty-state h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  max-width: 380px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.empty-state-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ── Modal Overlay ────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 6, 7, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fade-in var(--dur-fast) ease;
+}
+
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+.modal-box {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-faint);
+  border-radius: 6px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 0 1px var(--border-deep);
+  max-width: 680px;
+  width: 100%;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: modal-in var(--dur-med) var(--ease-out);
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ── Loading Indicator ────────────────────────────────────────────── */
+.loading-bar {
+  height: 2px;
+  width: 100%;
+  background: var(--border-deep);
+  overflow: hidden;
+  position: relative;
+}
+.loading-bar::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scan-anim 1.5s infinite ease-in-out;
+}
+
+@keyframes scan-anim {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(350%); }
+}
+
+/* ── Dividers ─────────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: 0;
+}
+
+/* ── Panel Header (Generic, Editorial) ───────────────────────────── */
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 16px;
+  background: var(--bg-void);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.panel-header-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.panel-header-meta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ── Accessibility ────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   BACKWARD-COMPATIBILITY ALIASES
+   Maps old variable names used in existing workspaces to new tokens.
+   Allows large files (CausalWorkspace, etc.) to work without a full rewrite.
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  /* Old accent names → new accent */
+  --accent-cyan:        var(--accent);
+  --accent-cyan-border: var(--accent-border);
+  --accent-cyan-dim:    var(--accent-dim);
+
+  /* Old emerald names */
+  --accent-emerald:      var(--emerald);
+  --accent-emerald-dim:  var(--emerald-dim);
+
+  /* Old crimson names */
+  --accent-crimson:      var(--crimson);
+  --accent-crimson-dim:  var(--crimson-dim);
+
+  /* Old amber names */
+  --accent-amber:        var(--amber);
+  --accent-amber-dim:    var(--amber-dim);
+
+  /* Old border names */
+  --border-dark:   var(--border-subtle);
+  --border-bright: var(--border-clear);
+
+  /* Old bg names */
+  --bg-subtle:   var(--bg-elevated);
+
+  /* Old layout names */
+  --topbar-height: var(--topbar-h);
+  --rail-width:    var(--rail-w);
+
+  /* Old primary button class handled via .primary → reset below */
+}
+
+/* Old .primary button class shim */
+button.primary {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+  font-weight: 600;
+}
+button.primary:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: var(--accent);
+}
+
+/* Old .close-btn shim */
+.close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.close-btn:hover { color: var(--text-primary); }

@@ -1,0 +1,248 @@
+{{ CHECKPOINT 9 }}
+ **The earlier parts of this conversation have been truncated due to its long length. The following content summarizes the truncated context so that you may continue your work. **
+
+
+# User Requests
+The following were user requests from the truncated conversation in chronological order:
+1. PHASE 08 — MEMORY GENOME + CASCADE ENGINE
+==========================================
+
+IMPORTANT:
+DO NOT rewrite, remove, simplify, or break anything from
+Phase 1–7.
+
+Everything already implemented must continue working.
+
+Preserve all existing systems including:
+
+- Memory Engine
+- Experiments
+- State Snapshots
+- Replay
+- Memory X-Ray
+- Memory Maps
+- Timeline
+- Memory Lab
+- Counterfactual Lab
+- Memory Surgery
+- Divergence Analysis
+- Provenance
+- Observatory
+- Reports
+- Command Palette
+- Memory Detective
+- Hypothesis Engine
+- Investigation Notebook
+- Discovery Feed
+- Reproducibility
+
+This phase adds a new research layer on top.
+
+========================================================
+CORE CONCEPT
+========================================================
+
+Introduce:
+
+MEMORY GENOME
+
+The idea:
+
+A memory should not be treated as a single isolated value.
+
+Represent it as a structured object containing:
+
+- origin
+- formation events
+- associations
+- reinforcemen
+<truncated 22464 bytes>
+2. PHASE 09 — AUTONOMOUS DISCOVERY ENGINE
+======================================
+
+IMPORTANT:
+DO NOT rewrite, remove, simplify, or break Phase 1–8.
+
+Preserve every existing feature.
+
+The goal of this phase is NOT to create a chatbot.
+
+The goal is to create an experimental discovery system that can
+AUTOMATICALLY FIND INTERESTING BEHAVIOR inside computational
+memory experiments and turn those observations into
+testable investigations.
+
+========================================================
+CORE IDEA
+========================================================
+
+Create:
+
+AUTONOMOUS DISCOVERY ENGINE
+
+The system continuously analyzes completed experiments.
+
+Pipeline:
+
+EXPERIMENT
+    ↓
+OBSERVATION
+    ↓
+ANOMALY / PATTERN
+    ↓
+RESEARCH QUESTION
+    ↓
+HYPOTHESES
+    ↓
+CONTROLLED EXPERIMENT
+    ↓
+COUNTERFACTUAL
+    ↓
+EVIDENCE
+    ↓
+DISCOVERY
+
+
+IMPORTANT:
+
+The system must NEVER manufacture scientific discoveries.
+
+It can discover:
+
+"interesting measur
+<truncated 25074 bytes>
+3. contunue
+4. continue
+5. PHASE 10 — CAUSAL MEMORY LAB
+============================
+
+IMPORTANT:
+DO NOT rewrite, remove, simplify, or break ANY functionality
+from Phase 1–9.
+
+This phase must EXTEND the existing Neural Archaeology system.
+
+Do not create fake visualizations.
+
+Every visualization, metric, timeline, causal relationship,
+simulation result, and explanation must come from actual
+backend data or clearly labeled synthetic/demo data.
+
+DO NOT start Phase 11.
+
+========================================================
+CORE IDEA
+========================================================
+
+Build the:
+
+CAUSAL MEMORY LAB
+
+The researcher should be able to ask:
+
+"What would have happened if this memory had never existed?"
+
+"What if this memory had been strengthened?"
+
+"What if it arrived earlier?"
+
+"What if two memories were swapped?"
+
+"What if the intervention happened at a different moment?"
+
+"What caused the cascade?"
+
+"What is the earliest point at which the system diverged?"
+
+The system sh
+<truncated 24598 bytes>
+
+# Previous Session Summary:
+1. Outstanding User Requests
+- **Phase 10 — Causal Memory Lab**: Implement a comprehensive causal analysis framework allowing interventions (Remove, Strengthen, Swap, etc.) and counterfactual trajectory comparison. (Status: NOT STARTED)
+  - Features include: Causal Scenario Builder, Temporal/Critical Window Detection, First Divergence Detector, Cascade Reconstruction, Causal Graph, Causal Edge Testing, Interaction Effect Analysis, Memory Swap Experiment, Causal Ledger, and Contradiction Engine.
+- **Frontend/Backend Integration**: Connect the new Causal Lab UI to the backend causal scenario compilation and counterfactual execution engine. (Status: NOT STARTED)
+
+2. User Knowledge
+- **Core Requirement**: "DO NOT rewrite, remove, simplify, or break ANY functionality from Phase 1–9. This phase must EXTEND the existing Neural Archaeology system."
+- **Paradigm**: The system must distinguish between "OBSERVED WORLD" and "COUNTERFACTUAL WORLD". Backend data must be verifiable; NO manufactured scientific discoveries or fake visualizations.
+- **Visual/UI Identity**: "Dark research laboratory, large typography, high information density, thin technical lines, interactive timelines, causal graph, split-screen counterfactuals."
+- **Constraint**: "The system must NEVER manufacture scientific discoveries. It can discover: 'interesting measurement patterns', 'unexplained survival', 'persistent crosstalk', and 'early divergence'."
+
+3. Work Accomplished
+- **Phases 1–9**: Successfully implemented the entire pipeline from Memory Engine to the Autonomous Discovery Engine (Phase 9).
+- **Frontend Architecture**: Established a robust React/Vite/TypeScript frontend with workspace-based routing and a shared design system using CSS variables.
+- **Backend API**: Established the core research API suite (detective, genome, agency/discovery endpoints).
+- **Build Status**: Verified that the entire project (Phases 1–9) compiles without TypeScript errors and produces a clean production build.
+
+4. Model Knowledge
+- **Workspace Architecture**: `App.tsx` manages an `activeWorkspace` state, delegating rendering to specific workspace components. Navigation is governed by `CommandRail` and `CommandPalette`, which must be updated with every new workspace.
+- **State Management**: Data flows through an `ExperimentStore` singleton in the FastAPI backend (`backend.main:app`).
+- **Agency Pattern**: Research investigations move through specific states (planning -> running -> synthesizing).
+- **TypeScript Types**: `types.ts` is the central source of truth for all research entities. All new workspace components must strictly adhere to these interfaces to avoid compilation errors.
+- **Constraint Compliance**: Any new backend route added in Phase 10 must be registered in the FastAPI router and follow the established `/api/causal/...` or similar naming convention.
+
+5. Files and Code
+- **Edited/Created Files (Phases 1–9)**: 
+  - `frontend/src/workspaces/`: GenomeWorkspace.tsx, AgencyWorkspace.tsx (Phase 8/9).
+  - `frontend/src/types.ts`: Models for investigations, agents, genome data, and causal structures.
+  - `frontend/src/api.ts`: API clients for detective, genome, and agency operations.
+  - `frontend/src/App.css`: Comprehensive styles for all workspaces (Futuristic dark-mode).
+  - `frontend/src/App.tsx`: Central hub for workspace mounting and shortcut registration.
+
+6. Current Work and Next Steps
+- **Immediate Next Step**: Initiate Phase 10 by designing the backend service (`causal_routes.py`) and the corresponding frontend `CausalWorkspace.tsx`.
+- **User Instruction**: "Phase 10 — Causal Memory Lab ... DO NOT start Phase 11."
+- **Tooling/Environment**: The dev environment is currently operational with `uvicorn` and `vite` daemons running (Tasks 650/1365).
+- **Design Focus**: The next agent should prioritize the "Causal Scenario Builder" and "Temporal Intervention" UI components as requested in the Phase 10 spec.
+
+You have the 4 following artifacts written to the artifacts directory:
+
+[ARTIFACT: scratchpad_1vqyfjhb]
+Path: file:///C:/Users/User/.gemini/antigravity-ide/brain/620781a9-f46b-4a62-996f-8244486fd488/browser/scratchpad_1vqyfjhb.md
+Last Edited: 2026-09-08T16:20:38Z
+
+[ARTIFACT: scratchpad_zzawplsz]
+Path: file:///C:/Users/User/.gemini/antigravity-ide/brain/620781a9-f46b-4a62-996f-8244486fd488/browser/scratchpad_zzawplsz.md
+Last Edited: 2026-09-08T15:45:00Z
+
+[ARTIFACT: implementation_plan]
+Path: file:///C:/Users/User/.gemini/antigravity-ide/brain/620781a9-f46b-4a62-996f-8244486fd488/implementation_plan.md
+Last Edited: 2026-09-08T16:23:52Z
+
+[ARTIFACT: walkthrough]
+Path: file:///C:/Users/User/.gemini/antigravity-ide/brain/620781a9-f46b-4a62-996f-8244486fd488/walkthrough.md
+Last Edited: 2026-09-08T16:22:04Z
+
+# Running Background Tasks
+The following background tasks were running at the time this checkpoint was created.
+Use the manage_task tool to interact with them (e.g. to kill them or check their status).
+
+{
+  "taskId": "620781a9-f46b-4a62-996f-8244486fd488/task-650",
+  "toolName": "run_command",
+  "toolSummary": "Start Vite frontend dev server daemon",
+  "description": "npm --prefix frontend run dev -- --host 127.0.0.1 --port 5173",
+  "startTime": "2026-09-08T15:44:05.057560800Z",
+  "stepIndex": 650,
+  "logUri": "file:///C:/Users/User/.gemini/antigravity-ide/brain/620781a9-f46b-4a62-996f-8244486fd488/.system_generated/tasks/task-650.log",
+  "isDaemon": true
+}
+{
+  "taskId": "620781a9-f46b-4a62-996f-8244486fd488/task-1365",
+  "toolName": "run_command",
+  "toolSummary": "Launch fresh FastAPI server",
+  "description": "uv run uvicorn backend.main:app --host 127.0.0.1 --port 8000",
+  "startTime": "2026-09-08T16:19:41.769749900Z",
+  "stepIndex": 1365,
+  "logUri": "file:///C:/Users/User/.gemini/antigravity-ide/brain/620781a9-f46b-4a62-996f-8244486fd488/.system_generated/tasks/task-1365.log",
+  "isDaemon": true
+}
+
+# Conversation Logs
+
+Reference the following log files for the full, untruncated conversation:
+
+- C:\Users\User\.gemini\antigravity-ide\brain\620781a9-f46b-4a62-996f-8244486fd488\.system_generated\logs\transcript.jsonl
+
+**IMPORTANT: this summary is just for your reference. You may respond to my previous and future messages, but DO NOT ACKNOWLEDGE THIS CHECKPOINT MESSAGE. JUST READ IT BUT DO NOT MENTION IT, RESPOND TO IT, OR TAKE ACTION BECAUSE OF IT.**
