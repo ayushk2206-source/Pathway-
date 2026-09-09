@@ -1079,3 +1079,1003 @@ export function getExperimentSynapticHistory(
 ): Promise<{ experiment_id: string; total_steps: number; states: import('./types').SynapticNetworkState[] }> {
   return json(`${BASE}/synaptic/experiment/${encodeURIComponent(experimentId)}/history?display_dim=${displayDim}`)
 }
+
+// ---------------------------------------------------------------------------
+// Phase 15: Synaptic Surgery & Memory X-Ray API
+// ---------------------------------------------------------------------------
+
+export function lockSurgeryBaseline(req?: {
+  dimension?: number
+  seed?: number
+  decay?: number
+}): Promise<{ status: string; message: string; session: import('./types').SurgerySession }> {
+  return json(`${BASE}/surgery/lock`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req || {}),
+  })
+}
+
+export function getSurgeryState(): Promise<{
+  locked: boolean
+  session: import('./types').SurgerySession | null
+  message: string
+}> {
+  return json(`${BASE}/surgery/state`)
+}
+
+export function weakenSynapses(
+  synapseIds: string[],
+  factor: number = 0.5,
+): Promise<{ operation: import('./types').SurgeryOperation; session: import('./types').SurgerySession }> {
+  return json(`${BASE}/surgery/weaken`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ synapse_ids: synapseIds, factor }),
+  })
+}
+
+export function strengthenSynapses(
+  synapseIds: string[],
+  factor: number = 2.0,
+): Promise<{ operation: import('./types').SurgeryOperation; session: import('./types').SurgerySession }> {
+  return json(`${BASE}/surgery/strengthen`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ synapse_ids: synapseIds, factor }),
+  })
+}
+
+export function silenceSynapses(
+  synapseIds: string[],
+): Promise<{ operation: import('./types').SurgeryOperation; session: import('./types').SurgerySession }> {
+  return json(`${BASE}/surgery/silence`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ synapse_ids: synapseIds }),
+  })
+}
+
+export function restoreSynapses(
+  synapseIds: string[],
+): Promise<{ operation: import('./types').SurgeryOperation; session: import('./types').SurgerySession }> {
+  return json(`${BASE}/surgery/restore`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ synapse_ids: synapseIds }),
+  })
+}
+
+export function resetSurgery(): Promise<{
+  operation: import('./types').SurgeryOperation
+  session: import('./types').SurgerySession
+}> {
+  return json(`${BASE}/surgery/reset`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({}),
+  })
+}
+
+export function runSurgeryRecall(req: {
+  query_concept: string
+  expected_value?: string
+  measure?: string
+  top_k?: number
+}): Promise<{
+  comparison: import('./types').SurgeryRecallComparison
+  session: import('./types').SurgerySession
+}> {
+  return json(`${BASE}/surgery/recall`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function getSynapseXRay(synapseId: string): Promise<import('./types').SynapseXRayDetail> {
+  return json(`${BASE}/surgery/synapse/${encodeURIComponent(synapseId)}/xray`)
+}
+
+export function getMemoryXRay(req: {
+  query_concept: string
+  expected_value?: string
+  dimension?: number
+  seed?: number
+  decay?: number
+  branch?: 'live' | 'baseline' | 'surgery'
+}): Promise<import('./types').MemoryXRay> {
+  return json(`${BASE}/surgery/xray/memory`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+// ==========================================
+// Phase 16 Counterfactual / What-If Engine API
+// ==========================================
+
+export function runSynapticCounterfactual(
+  req: import('./types').SynapticInterventionPayload,
+): Promise<import('./types').SynapticInterventionResponse> {
+  return json(`${BASE}/counterfactual/synaptic-intervention`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function compareSynapticCounterfactual(
+  originalExperimentId: string,
+  counterfactualId: string,
+  stepIdx: number,
+  displayDim: number = 16,
+): Promise<import('./types').SynapticCompareResponse> {
+  return json(`${BASE}/counterfactual/synaptic-compare`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      original_experiment_id: originalExperimentId,
+      counterfactual_id: counterfactualId,
+      step_idx: stepIdx,
+      display_dim: displayDim,
+    }),
+  })
+}
+
+export function getExperimentBranches(
+  experimentId: string,
+): Promise<import('./types').ExperimentBranchesResponse> {
+  return json(`${BASE}/counterfactual/branches/${encodeURIComponent(experimentId)}`)
+}
+
+// ============================================================================
+// Phase 17: Memory Collision & Interference Lab API
+// ============================================================================
+
+export function runCollisionExperiment(
+  req: import('./types').CollisionConfig,
+): Promise<import('./types').CollisionResult> {
+  return json(`${BASE}/collision/run`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runThreeConditionSuite(req: {
+  seed: number
+  dimension: number
+  decay: number
+  update_strength: number
+  memory_a: import('./types').CollisionMemory
+  memory_b: import('./types').CollisionMemory
+  order: 'A_THEN_B' | 'B_THEN_A'
+  temporal_delay: number
+}): Promise<import('./types').ThreeConditionResult> {
+  return json(`${BASE}/collision/three-conditions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runOrderComparison(req: {
+  seed: number
+  dimension: number
+  decay: number
+  update_strength: number
+  memory_a: import('./types').CollisionMemory
+  memory_b: import('./types').CollisionMemory
+  overlap_preset: string
+  concept_similarity: number
+  temporal_delay: number
+}): Promise<import('./types').OrderComparisonResult> {
+  return json(`${BASE}/collision/order-comparison`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runCollisionSurgery(req: {
+  config: import('./types').CollisionConfig
+  synapse_id: string
+  operation: 'silence' | 'weaken' | 'strengthen'
+  factor?: number
+}): Promise<import('./types').CollisionSurgeryResult> {
+  return json(`${BASE}/collision/surgery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runCollisionCounterfactual(req: {
+  config: import('./types').CollisionConfig
+  shared_synapse_ids?: string[]
+}): Promise<import('./types').CollisionCounterfactualResult> {
+  return json(`${BASE}/collision/counterfactual`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+// ============================================================================
+// Phase 18: Memory Detective & Research Lab Forensics API
+// ============================================================================
+
+export function getDetectiveCases(
+  blind: boolean = true,
+): Promise<{ total: number; cases: import('./types').InvestigationCase[] }> {
+  return json(`${BASE}/forensics/cases?blind=${blind}`)
+}
+
+export function getDetectiveCase(
+  caseId: string,
+  blind: boolean = true,
+): Promise<{ case: import('./types').InvestigationCase }> {
+  return json(`${BASE}/forensics/cases/${encodeURIComponent(caseId)}?blind=${blind}`)
+}
+
+export function testDetectiveHypothesis(
+  caseId: string,
+  hypothesisId: string,
+  tool: string = 'xray',
+): Promise<import('./types').HypothesisTestResult> {
+  return json(`${BASE}/forensics/cases/${encodeURIComponent(caseId)}/test-hypothesis`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hypothesis_id: hypothesisId, tool }),
+  })
+}
+
+export function submitDetectiveVerdict(
+  caseId: string,
+  payload: {
+    chosen_hypothesis_id: string
+    collected_evidence_ids: string[]
+    tests_run_count: number
+    learner_confidence: string
+    explanation_chain: string[]
+  },
+): Promise<{
+  case_id: string
+  score: import('./types').DetectiveScore
+  ground_truth_explanation: string
+}> {
+  return json(`${BASE}/forensics/cases/${encodeURIComponent(caseId)}/submit-verdict`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+}
+
+export function runCustomResearch(
+  config: Partial<import('./types').CustomExperimentConfig>,
+): Promise<import('./types').CustomExperimentResult> {
+  return json(`${BASE}/forensics/research/run`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config),
+  })
+}
+
+export function getResearchHistory(): Promise<{
+  total: number
+  experiments: import('./types').CustomExperimentResult[]
+}> {
+  return json(`${BASE}/forensics/research/history`)
+}
+
+export function compareResearchExperiments(
+  expAId: string,
+  expBId: string,
+): Promise<import('./types').ExperimentComparison> {
+  return json(`${BASE}/forensics/research/compare`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ exp_a_id: expAId, exp_b_id: expBId }),
+  })
+}
+
+export function getForensicsSources(): Promise<import('./types').ForensicsSourcesResponse> {
+  return json(`${BASE}/forensics/sources`)
+}
+
+export function getForensicsObjectives(): Promise<{
+  total: number
+  objectives: import('./types').LearningObjective[]
+}> {
+  return json(`${BASE}/forensics/objectives`)
+}
+
+// ==========================================
+// Phase 19 Adaptive Memory Observatory API
+// ==========================================
+
+export function getObservatoryPresets(): Promise<{
+  presets: import('./types').ObservatoryPreset[]
+}> {
+  return json(`${BASE}/observatory/presets`)
+}
+
+export function listObservatorySessions(): Promise<{
+  total: number
+  sessions: Array<{
+    session_id: string
+    name: string
+    description: string
+    created_at: string
+    total_steps: number
+    dimension: number
+  }>
+}> {
+  return json(`${BASE}/observatory/sessions`)
+}
+
+export function getObservatorySession(
+  sessionId: string,
+): Promise<{
+  session: import('./types').ObservatorySession
+  env_report?: import('./types').EnvironmentShiftReport
+}> {
+  return json(`${BASE}/observatory/sessions/${encodeURIComponent(sessionId)}`)
+}
+
+export function runObservatoryStream(req: {
+  name: string
+  description?: string
+  dimension?: number
+  default_learning_rate?: number
+  default_decay_rate?: number
+  events: Array<{
+    event_id: string
+    step: number
+    event_type: string
+    key_label: string
+    environment_id: string
+    decay_rate?: number
+    learning_rate?: number
+    cue_pattern?: number[]
+    target_pattern?: number[]
+    metadata?: Record<string, unknown>
+  }>
+  probes?: Array<{
+    concept: string
+    cue_pattern: number[]
+    target_pattern: number[]
+  }>
+}): Promise<{
+  session: import('./types').ObservatorySession
+  env_report?: import('./types').EnvironmentShiftReport
+}> {
+  return json(`${BASE}/observatory/stream/run`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function diffObservatoryStates(req: {
+  session_id: string
+  step_from: number
+  step_to: number
+  threshold?: number
+}): Promise<{
+  diff: import('./types').ChangeDetection
+}> {
+  return json(`${BASE}/observatory/diff`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function getStabilityPlasticity(
+  sessionId: string,
+  stepA: number,
+  stepB: number,
+): Promise<{
+  metrics: import('./types').StabilityPlasticityMetrics
+}> {
+  return json(
+    `${BASE}/observatory/stability-plasticity/${encodeURIComponent(sessionId)}?step_a=${stepA}&step_b=${stepB}`,
+  )
+}
+
+export function branchObservatoryIntervention(req: {
+  session_id: string
+  branch_step: number
+  target_synapse: [number, number]
+  new_weight: number
+  branch_name?: string
+}): Promise<{
+  branch_session: import('./types').ObservatorySession
+}> {
+  return json(`${BASE}/observatory/branch/intervention`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function branchObservatoryCounterfactual(req: {
+  session_id: string
+  branch_step: number
+  altered_learning_rate?: number
+  altered_decay_rate?: number
+  branch_name?: string
+}): Promise<{
+  branch_session: import('./types').ObservatorySession
+}> {
+  return json(`${BASE}/observatory/branch/counterfactual`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function compareObservatorySessions(
+  sessionAId: string,
+  sessionBId: string,
+): Promise<{
+  comparison: import('./types').ObservatoryComparison
+}> {
+  return json(`${BASE}/observatory/compare`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ session_a_id: sessionAId, session_b_id: sessionBId }),
+  })
+}
+
+export function submitObservatoryPrediction(req: {
+  session_id: string
+  target_env: string
+  predicted_category: string
+  hypothesis: string
+  confidence?: number
+}): Promise<{
+  prediction: import('./types').LearnerPrediction
+}> {
+  return json(`${BASE}/observatory/prediction`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function exportObservatoryDetectiveCase(req: {
+  session_id: string
+  target_concept: string
+  interference_step?: number
+}): Promise<{
+  detective_case_id: string
+  title: string
+  message: string
+}> {
+  return json(`${BASE}/observatory/export-to-detective`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function exportObservatorySessionJson(
+  sessionId: string,
+): Promise<Record<string, unknown>> {
+  return json(`${BASE}/observatory/sessions/${encodeURIComponent(sessionId)}/export-json`)
+}
+
+// ==========================================
+// Phase 20 Memory Genome & Synaptic Fingerprint API
+// ==========================================
+
+export function getFingerprintDemo(dimension: number = 16, seed: number = 42): Promise<{
+  fingerprints: import('./types').SynapticFingerprint[]
+  distance_map: import('./types').MemoryDistanceMap
+  outliers: import('./types').OutlierReport[]
+  challenges: import('./types').FingerprintChallenge[]
+  concepts: string[]
+}> {
+  return json(`${BASE}/fingerprint/demo?dimension=${dimension}&seed=${seed}`)
+}
+
+export function computeFingerprint(req: {
+  concept: string
+  value?: string
+  dimension?: number
+  seed?: number
+  update_strength?: number
+  decay?: number
+}): Promise<{
+  fingerprint: import('./types').SynapticFingerprint
+}> {
+  return json(`${BASE}/fingerprint/compute`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function compareFingerprints(req: {
+  concept_a: string
+  concept_b: string
+  value_a?: string
+  value_b?: string
+  dimension?: number
+  seed?: number
+}): Promise<{
+  fingerprint_a: import('./types').SynapticFingerprint
+  fingerprint_b: import('./types').SynapticFingerprint
+  comparison: import('./types').FingerprintComparison
+}> {
+  return json(`${BASE}/fingerprint/compare`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function getSurfaceVsInternal(req: {
+  concepts: string[]
+  dimension?: number
+  seed?: number
+}): Promise<{
+  comparisons: import('./types').FingerprintComparison[]
+  total_pairs: number
+}> {
+  return json(`${BASE}/fingerprint/surface-vs-internal`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runCloningTest(req: {
+  target_concept: string
+  target_value?: string
+  intervening_concept?: string
+  intervening_value?: string
+  dimension?: number
+  seed?: number
+}): Promise<{
+  target_concept: string
+  fingerprint_before: import('./types').SynapticFingerprint
+  fingerprint_after: import('./types').SynapticFingerprint
+  comparison: import('./types').FingerprintComparison
+  stability_conclusion: string
+}> {
+  return json(`${BASE}/fingerprint/cloning-test`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runCollisionMutation(req: {
+  concept_a: string
+  value_a?: string
+  concept_b: string
+  value_b?: string
+  dimension?: number
+  seed?: number
+}): Promise<{
+  concept_a: string
+  concept_b: string
+  fingerprint_a_before: import('./types').SynapticFingerprint
+  fingerprint_b: import('./types').SynapticFingerprint
+  fingerprint_a_after_collision: import('./types').SynapticFingerprint
+  mutation_comparison: import('./types').FingerprintComparison
+  interpretation: string
+}> {
+  return json(`${BASE}/fingerprint/collision-mutation`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runFingerprintSurgery(req: {
+  concept: string
+  value?: string
+  target_synapse: [number, number]
+  new_weight: number
+  dimension?: number
+  seed?: number
+}): Promise<{
+  concept: string
+  target_synapse: [number, number]
+  weight_before: number
+  weight_after: number
+  fingerprint_before: import('./types').SynapticFingerprint
+  fingerprint_after: import('./types').SynapticFingerprint
+  comparison: import('./types').FingerprintComparison
+  recall_fidelity_before: number
+  recall_fidelity_after: number
+}> {
+  return json(`${BASE}/fingerprint/surgery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runCounterfactualFingerprint(req: {
+  concept: string
+  value?: string
+  cf_update_strength: number
+  dimension?: number
+  seed?: number
+}): Promise<{
+  concept: string
+  original_fingerprint: import('./types').SynapticFingerprint
+  counterfactual_fingerprint: import('./types').SynapticFingerprint
+  comparison: import('./types').FingerprintComparison
+  divergence_summary: string
+}> {
+  return json(`${BASE}/fingerprint/counterfactual`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function getMemoryDistanceMap(dimension: number = 16, seed: number = 42): Promise<{
+  distance_map: import('./types').MemoryDistanceMap
+}> {
+  return json(`${BASE}/fingerprint/distance-map?dimension=${dimension}&seed=${seed}`)
+}
+
+export function getFingerprintOutliers(dimension: number = 16, seed: number = 42): Promise<{
+  outliers: import('./types').OutlierReport[]
+}> {
+  return json(`${BASE}/fingerprint/outliers?dimension=${dimension}&seed=${seed}`)
+}
+
+export function getMemoryFamilyTree(concept: string, dimension: number = 16, seed: number = 42): Promise<{
+  family_tree: import('./types').MemoryBranchNode
+}> {
+  return json(`${BASE}/fingerprint/family-tree/${encodeURIComponent(concept)}?dimension=${dimension}&seed=${seed}`)
+}
+
+export function getFingerprintChallenges(): Promise<{
+  challenges: import('./types').FingerprintChallenge[]
+}> {
+  return json(`${BASE}/fingerprint/challenges`)
+}
+
+export function verifyFingerprintChallenge(req: {
+  challenge_id: string
+  selected_option: string
+}): Promise<{
+  challenge_id: string
+  is_correct: boolean
+  correct_option: string
+  explanation: string
+}> {
+  return json(`${BASE}/fingerprint/challenges/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function exportFingerprintJson(req: {
+  concept: string
+  value?: string
+  dimension?: number
+  seed?: number
+  update_strength?: number
+  decay?: number
+}): Promise<Record<string, unknown>> {
+  return json(`${BASE}/fingerprint/export`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+// ---------------------------------------------------------------------------
+// Phase 21: Memory Ecosystem / Unified Synaptic Memory World API
+// ---------------------------------------------------------------------------
+
+export function getEcosystemOverview(): Promise<import('./types').EcosystemOverview> {
+  return json(`${BASE}/ecosystem/overview`)
+}
+
+export function getMemoryEcosystemDetails(memoryId: string): Promise<{
+  passport: import('./types').MemoryPassport
+  lifecycle: import('./types').MemoryLifecycle
+  branch_tree: import('./types').MemoryBranch
+  checkpoints: import('./types').MemoryCheckpoint[]
+  ledger: import('./types').SynapticChangeLedger
+}> {
+  return json(`${BASE}/ecosystem/memory/${encodeURIComponent(memoryId)}`)
+}
+
+export function selectActiveMemory(memoryId: string, follow?: boolean): Promise<{
+  success: boolean
+  active_memory_id: string
+  is_following: boolean
+  passport: import('./types').MemoryPassport
+}> {
+  return json(`${BASE}/ecosystem/select-memory`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ memory_id: memoryId, follow }),
+  })
+}
+
+export function getUnifiedTimeline(memoryId?: string): Promise<{
+  memory_id?: string
+  total_events: number
+  events: import('./types').UnifiedTimelineEvent[]
+}> {
+  const q = memoryId ? `?memory_id=${encodeURIComponent(memoryId)}` : ''
+  return json(`${BASE}/ecosystem/timeline${q}`)
+}
+
+export function getMemoryRelationships(): Promise<{
+  total_relationships: number
+  relationships: import('./types').MemoryRelationship[]
+}> {
+  return json(`${BASE}/ecosystem/relationships`)
+}
+
+export function getSynapticChangeLedger(memoryId: string, transition?: string): Promise<{
+  ledger: import('./types').SynapticChangeLedger
+}> {
+  const q = transition ? `?transition=${encodeURIComponent(transition)}` : ''
+  return json(`${BASE}/ecosystem/ledger/${encodeURIComponent(memoryId)}${q}`)
+}
+
+export function submitLearnerHypothesis(req: {
+  memory_id: string
+  experiment_type: string
+  prediction_text: string
+  predicted_outcome: string
+}): Promise<{
+  hypothesis: import('./types').LearnerHypothesis
+}> {
+  return json(`${BASE}/ecosystem/hypothesis`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function listLearnerHypotheses(memoryId?: string): Promise<{
+  hypotheses: import('./types').LearnerHypothesis[]
+}> {
+  const q = memoryId ? `?memory_id=${encodeURIComponent(memoryId)}` : ''
+  return json(`${BASE}/ecosystem/hypotheses${q}`)
+}
+
+export function createMemoryCheckpoint(req: {
+  memory_id: string
+  label: string
+}): Promise<{
+  checkpoint: import('./types').MemoryCheckpoint
+}> {
+  return json(`${BASE}/ecosystem/checkpoint`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function listMemoryCheckpoints(memoryId: string): Promise<{
+  memory_id: string
+  checkpoints: import('./types').MemoryCheckpoint[]
+}> {
+  return json(`${BASE}/ecosystem/checkpoints/${encodeURIComponent(memoryId)}`)
+}
+
+export function compareMemoryStates(req: {
+  state_a: Record<string, unknown>
+  state_b: Record<string, unknown>
+}): Promise<{
+  comparison: {
+    frobenius_drift: number
+    active_ratio_shift: number
+    shared_stability: number
+    scientific_interpretation: string
+  }
+}> {
+  return json(`${BASE}/ecosystem/compare-states`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function replayMemoryHistory(memoryId: string): Promise<{
+  memory_id: string
+  concept: string
+  total_steps: number
+  playback_steps: {
+    step_index: number
+    event_type: string
+    title: string
+    description: string
+    producing_experiment: string
+    session_time: string
+    metrics: Record<string, unknown>
+    is_simplification: boolean
+    label: string
+  }[]
+  disclaimer: string
+}> {
+  return json(`${BASE}/ecosystem/replay/${encodeURIComponent(memoryId)}`)
+}
+
+// ==========================================
+// Phase 22 Experiment Studio API
+// ==========================================
+
+export function getStudioTemplates(): Promise<{
+  templates: import('./types').StudioExperimentTemplate[]
+  count: number
+}> {
+  return json(`${BASE}/studio/templates`)
+}
+
+export function getStudioGuidedJourney(): Promise<{
+  journey: import('./types').StudioGuidedJourney
+}> {
+  return json(`${BASE}/studio/guided-journey`)
+}
+
+export function runStudioExperiment(req: {
+  config: import('./types').StudioExperimentConfig
+  hypothesis?: import('./types').StudioHypothesis
+  notes?: import('./types').StudioExperimentNote | Record<string, string>
+}): Promise<{
+  result: import('./types').StudioExperimentResult
+}> {
+  return json(`${BASE}/studio/run`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function compareStudioAB(req: {
+  config_a: import('./types').StudioExperimentConfig
+  config_b: import('./types').StudioExperimentConfig
+}): Promise<{
+  comparison: import('./types').StudioABComparison
+}> {
+  return json(`${BASE}/studio/ab-compare`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function runStudioSweep(req: {
+  base_config: import('./types').StudioExperimentConfig
+  param_name: string
+  param_values?: number[]
+}): Promise<{
+  sweep: import('./types').StudioSweepResult
+}> {
+  return json(`${BASE}/studio/sweep`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function listStudioHistory(): Promise<{
+  history: import('./types').StudioHistoryItem[]
+  total: number
+}> {
+  return json(`${BASE}/studio/history`)
+}
+
+export function getStudioExperiment(experimentId: string): Promise<{
+  experiment: import('./types').StudioExperimentResult
+  notes: import('./types').StudioExperimentNote
+}> {
+  return json(`${BASE}/studio/experiment/${encodeURIComponent(experimentId)}`)
+}
+
+export function branchStudioExperiment(req: {
+  experiment_id: string
+  modified_param: string
+  new_value: unknown
+}): Promise<{
+  result: import('./types').StudioExperimentResult
+}> {
+  return json(`${BASE}/studio/branch`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function saveStudioNotes(req: {
+  experiment_id: string
+  question: string
+  hypothesis: string
+  observation: string
+  conclusion: string
+}): Promise<{
+  status: string
+  notes: import('./types').StudioExperimentNote
+}> {
+  return json(`${BASE}/studio/save-notes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}
+
+export function exportStudioExperiment(experimentId: string): Promise<Record<string, unknown>> {
+  return json(`${BASE}/studio/export/${encodeURIComponent(experimentId)}`)
+}
+
+// ==========================================
+// Phase 23 Scientific Evidence & Research API
+// ==========================================
+
+export function listResearchPapers(tag?: string): Promise<{
+  papers: import('./types').PrimaryResearchPaper[]
+  total: number
+  available_tags: string[]
+}> {
+  const q = tag && tag !== 'ALL' ? `?tag=${encodeURIComponent(tag)}` : ''
+  return json(`${BASE}/research/papers${q}`)
+}
+
+export function getResearchPaper(paperId: string): Promise<{
+  paper: import('./types').PrimaryResearchPaper
+}> {
+  return json(`${BASE}/research/papers/${encodeURIComponent(paperId)}`)
+}
+
+export function listResearchClaims(): Promise<{
+  claims: import('./types').ClaimTrace[]
+  total: number
+}> {
+  return json(`${BASE}/research/claims`)
+}
+
+export function listResearchMetrics(): Promise<{
+  metrics: import('./types').MetricDefinition[]
+  total: number
+}> {
+  return json(`${BASE}/research/metrics`)
+}
+
+export function getResearchGraph(): Promise<import('./types').ResearchGraphData> {
+  return json(`${BASE}/research/graph`)
+}
+
+export function getResearchDisclosures(): Promise<import('./types').DisclosuresData> {
+  return json(`${BASE}/research/disclosures`)
+}
+
+export function listResearchLicenses(): Promise<{
+  licenses: import('./types').SourceLicenseRecord[]
+  total: number
+}> {
+  return json(`${BASE}/research/licenses`)
+}
+
+export function generateExperimentMethodology(req: {
+  experiment_type: string
+  config: Record<string, unknown>
+}): Promise<{
+  methodology: import('./types').MethodologyData
+}> {
+  return json(`${BASE}/research/methodology`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+}

@@ -11,6 +11,7 @@ from typing import Any, Dict, List, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, Response
 
+from core.experiment import Experiment
 from core.counterfactual import (
     CounterfactualExperiment,
     CounterfactualValidationError,
@@ -19,6 +20,7 @@ from core.counterfactual import (
     ReplayStrategy,
     Timeline,
     compare_multiple_histories,
+    compare_synaptic_states_at_step,
     create_ablation,
     create_surgery,
     diff_histories,
@@ -42,6 +44,8 @@ from .counterfactual_schemas import (
     RunCounterfactualRequest,
     SearchCounterfactualsRequest,
     SurgeryRequest,
+    SynapticCompareRequest,
+    SynapticInterventionRequest,
 )
 from .store import ExperimentStore
 
@@ -325,3 +329,150 @@ def export_csv_endpoint(counterfactual_id: str, request: Request) -> Response:
         media_type="text/csv",
         headers={"Content-Disposition": f'attachment; filename="{counterfactual_id}_divergence.csv"'},
     )
+
+
+@router.post("/synaptic-intervention")
+def synaptic_intervention_endpoint(req: SynapticInterventionRequest, request: Request) -> Dict[str, Any]:
+    """Execute a controlled synaptic or mechanism counterfactual intervention."""
+    store = _store(request)
+    exp = store.get(req.experiment_id)
+    if not exp:
+        raise HTTPException(status_code=404, detail=f"Experiment '{req.experiment_id}' not found")
+
+    try:
+        itype = InterventionType(req.intervention_type)
+    except ValueError:
+        raise HTTPException(status_code=400, detail=f"Unsupported intervention type '{req.intervention_type}'")
+
+    params: Dict[str, Any] = {}
+    if req.synapse_id:
+        params["synapse_id"] = req.synapse_id
+    if req.factor is not None:
+        params["factor"] = float(req.factor)
+    if req.new_decay is not None:
+        params["new_decay"] = float(req.new_decay)
+    if req.new_update_strength is not None:
+        params["new_update_strength"] = float(req.new_update_strength)
+
+    desc = req.hypothesis or ""
+    if not desc:
+        if itype == InterventionType.SYNAPSE_PREVENT_STRENGTHEN:
+            desc = f"What if {req.synapse_id} had NOT strengthened at T>={req.target_timestep}?"
+        elif itype == InterventionType.SYNAPSE_SILENCE:
+            desc = f"What if connection {req.synapse_id} was silenced at T>={req.target_timestep}?"
+        elif itype == InterventionType.SYNAPSE_SCALE:
+            desc = f"What if {req.synapse_id} was scaled by {req.factor}x at T={req.target_timestep}?"
+        elif itype == InterventionType.CHANGE_DECAY:
+            desc = f"What if decay happened at rate {req.new_decay}?"
+        elif itype == InterventionType.CHANGE_PLASTICITY:
+            desc = f"What if memory was written with plasticity {req.new_update_strength}?"
+
+    intv = Intervention(
+        intervention_type=itype,
+        target_timestep=req.target_timestep,
+        parameters=params,
+        description=desc,
+        metadata={"hypothesis": req.hypothesis or "", "baseline_experiment_id": exp.experiment_id},
+    )
+
+    try:
+        cf = run_counterfactual(
+            experiment=exp,
+            intervention=intv,
+            title=req.title or desc,
+            description=req.hypothesis or desc,
+        )
+        saved_cf = store.save_counterfactual(cf)
+
+        cf_exp_dict = cf.counterfactual_result.get("experiment")
+        if cf_exp_dict and isinstance(cf_exp_dict, dict):
+            try:
+                cf_exp_obj = Experiment.from_dict(cf_exp_dict)
+                store.save(cf_exp_obj)
+            except Exception:
+                pass
+
+        return {
+            "status": "success",
+            "counterfactual": saved_cf.to_dict(),
+            "counterfactual_id": saved_cf.counterfactual_id,
+            "branch_point": saved_cf.provenance.get("branch_point", 0),
+            "variable_controlled": desc,
+            "metrics_original": exp.metrics,
+            "metrics_counterfactual": saved_cf.counterfactual_result.get("metrics", {}),
+        }
+    except CounterfactualValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Execution error: {str(exc)}")
+
+
+@router.post("/synaptic-compare")
+def synaptic_compare_endpoint(req: SynapticCompareRequest, request: Request) -> Dict[str, Any]:
+    """Forensically compare original and counterfactual network states at exact timestep T."""
+    store = _store(request)
+    exp_orig = store.get(req.original_experiment_id)
+    if not exp_orig:
+        raise HTTPException(status_code=404, detail=f"Original experiment '{req.original_experiment_id}' not found")
+
+    cf = store.get_counterfactual(req.counterfactual_id)
+    exp_cf: Optional[Experiment] = None
+
+    if cf:
+        cf_exp_dict = cf.counterfactual_result.get("experiment")
+        if cf_exp_dict and isinstance(cf_exp_dict, dict):
+            exp_cf = Experiment.from_dict(cf_exp_dict)
+
+    if not exp_cf:
+        exp_cf = store.get(req.counterfactual_id)
+
+    if not exp_cf:
+        raise HTTPException(status_code=404, detail=f"Counterfactual experiment '{req.counterfactual_id}' not found")
+
+    div_step = cf.provenance.get("branch_point") if cf else 0
+    desc = cf.intervention.get("description", "") if cf else ""
+
+    result = compare_synaptic_states_at_step(
+        original_experiment=exp_orig,
+        counterfactual_experiment=exp_cf,
+        step_idx=req.step_idx,
+        display_dim=req.display_dim,
+        divergence_step=div_step,
+        intervention_desc=desc,
+    )
+    return result
+
+
+@router.get("/branches/{experiment_id}")
+def get_experiment_branches_endpoint(experiment_id: str, request: Request) -> Dict[str, Any]:
+    """Retrieve all counterfactual branches derived from this experiment."""
+    store = _store(request)
+    exp = store.get(experiment_id)
+    if not exp:
+        raise HTTPException(status_code=404, detail=f"Experiment '{experiment_id}' not found")
+
+    cfs = store.list_counterfactuals(parent_id=experiment_id)
+    branches = []
+    for cf in cfs:
+        orig_acc = cf.original_result.get("metrics", {}).get("recall_accuracy")
+        cf_acc = cf.counterfactual_result.get("metrics", {}).get("recall_accuracy")
+        branches.append({
+            "branch_id": cf.counterfactual_id,
+            "title": cf.title,
+            "description": cf.description,
+            "intervention_type": cf.intervention_type,
+            "divergence_step": cf.provenance.get("branch_point", 0),
+            "target_synapse": cf.intervention.get("parameters", {}).get("synapse_id"),
+            "original_accuracy": orig_acc,
+            "counterfactual_accuracy": cf_acc,
+            "accuracy_delta": (float(cf_acc) - float(orig_acc)) if orig_acc is not None and cf_acc is not None else 0.0,
+            "created_at": cf.created_at,
+            "status": cf.status.value if hasattr(cf.status, "value") else str(cf.status),
+        })
+
+    return {
+        "experiment_id": experiment_id,
+        "total_branches": len(branches),
+        "branches": branches,
+    }
+

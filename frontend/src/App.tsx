@@ -48,7 +48,10 @@ import { EvidenceModal } from './components/EvidenceModal'
 import { KeyboardShortcutsModal } from './components/KeyboardShortcutsModal'
 import { MemoryInspectorDrawer } from './components/MemoryInspectorDrawer'
 import { ObservatoryWorkspace } from './workspaces/ObservatoryWorkspace'
+import { ObservatoryStudioWorkspace } from './workspaces/ObservatoryStudioWorkspace'
 import { SynapticBrainWorkspace } from './workspaces/SynapticBrainWorkspace'
+import { SurgeryWorkspace } from './workspaces/SurgeryWorkspace'
+import { MemoryCollisionWorkspace } from './MemoryCollisionWorkspace'
 import { MemoryLabWorkspace } from './workspaces/MemoryLabWorkspace'
 import { MemoryXRayWorkspace } from './workspaces/MemoryXRayWorkspace'
 import { TimelineWorkspace } from './workspaces/TimelineWorkspace'
@@ -56,17 +59,33 @@ import { MemoryMapWorkspace } from './workspaces/MemoryMapWorkspace'
 import { CounterfactualWorkspace } from './workspaces/CounterfactualWorkspace'
 import { ExperimentsWorkspace } from './workspaces/ExperimentsWorkspace'
 import { ReportsWorkspace } from './workspaces/ReportsWorkspace'
-import { DetectiveWorkspace } from './workspaces/DetectiveWorkspace'
+import { MemoryDetectiveWorkspace } from './workspaces/MemoryDetectiveWorkspace'
+import { ResearchLabWorkspace } from './workspaces/ResearchLabWorkspace'
 import { GenomeWorkspace } from './workspaces/GenomeWorkspace'
 import { AgencyWorkspace } from './workspaces/AgencyWorkspace'
 import { CausalWorkspace } from './workspaces/CausalWorkspace'
+import { MemoryEcosystemWorkspace } from './workspaces/MemoryEcosystemWorkspace'
+import { ExperimentStudioWorkspace } from './workspaces/ExperimentStudioWorkspace'
+import { ScientificResearchWorkspace } from './workspaces/ScientificResearchWorkspace'
+import { ImmersionEntryHero } from './components/ImmersionEntryHero'
+import { ImmersiveNavDock } from './components/ImmersiveNavDock'
+import { CustomPointer } from './components/CustomPointer'
+import { JudgeModeExperience } from './components/JudgeModeExperience'
 import './App.css'
+import './forensics.css'
+import './immersive.css'
+import './judge.css'
 
 export default function App() {
   // Navigation & Workspace state
+  const [isImmersionPortalOpen, setIsImmersionPortalOpen] = useState(true)
+  const [isJudgeModeOpen, setIsJudgeModeOpen] = useState(false)
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false)
   const [activeWorkspace, setActiveWorkspace] = useState<WorkspaceId>('synaptic')
+  const [observatoryMode, setObservatoryMode] = useState<'studio' | 'overview'>('studio')
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false)
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false)
+  const [isFollowingMemory, setIsFollowingMemory] = useState(true)
   const [evidenceData, setEvidenceData] = useState<{ title: string; details: Record<string, unknown> } | null>(null)
 
   // Core Data State
@@ -263,6 +282,12 @@ export default function App() {
       }
 
       switch (e.key.toLowerCase()) {
+        case 'e':
+          setActiveWorkspace('ecosystem')
+          break
+        case 'p':
+          setActiveWorkspace('studio')
+          break
         case 's':
           setActiveWorkspace('synaptic')
           break
@@ -289,6 +314,10 @@ export default function App() {
           break
         case 'r':
           handleReplay()
+          break
+        case '[':
+        case ']':
+          setIsSidebarExpanded((p) => !p)
           break
       }
     }
@@ -350,8 +379,20 @@ export default function App() {
   const availableMemories = memoryMap?.points.map((p) => p.memory_id) || []
 
   return (
-    <div className="app-container">
-      {/* Top Application Bar */}
+    <div className="app-shell" style={{ position: 'relative' }}>
+      <CustomPointer mode="default" />
+
+      {isImmersionPortalOpen && (
+        <ImmersionEntryHero
+          onEnter={() => setIsImmersionPortalOpen(false)}
+          onLaunchJudgeMode={() => {
+            setIsImmersionPortalOpen(false)
+            setIsJudgeModeOpen(true)
+          }}
+        />
+      )}
+
+      {/* Primary Scientific TopBar Navigation */}
       <TopBar
         currentExperiment={experiment}
         experiments={experimentsList}
@@ -360,7 +401,11 @@ export default function App() {
         onReplay={handleReplay}
         onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
         onOpenShortcuts={() => setIsShortcutsOpen(true)}
+        onOpenJudgeMode={() => setIsJudgeModeOpen(true)}
         isBusy={isBusy}
+        selectedMemoryId={selectedMemoryId}
+        isFollowingMemory={isFollowingMemory}
+        onToggleFollowMemory={() => setIsFollowingMemory((p) => !p)}
       />
 
       {/* Main Workspace Layout */}
@@ -370,9 +415,18 @@ export default function App() {
           onSelectWorkspace={setActiveWorkspace}
           engineDim={experiment?.task.d || 128}
           apiStatus={apiStatus}
+          isExpanded={isSidebarExpanded}
+          onToggleExpand={() => setIsSidebarExpanded((p) => !p)}
         />
 
         <main className="main-canvas">
+          {activeWorkspace === 'ecosystem' && (
+            <MemoryEcosystemWorkspace
+              onNavigateToWorkspace={(ws) => setActiveWorkspace(ws as WorkspaceId)}
+              onSelectGlobalMemory={(id) => setSelectedMemoryId(id)}
+            />
+          )}
+
           {activeWorkspace === 'synaptic' && (
             <SynapticBrainWorkspace
               experiment={experiment}
@@ -381,32 +435,74 @@ export default function App() {
             />
           )}
 
-          {activeWorkspace === 'observatory' && (
-            <ObservatoryWorkspace
+          {activeWorkspace === 'surgery' && (
+            <SurgeryWorkspace
               experiment={experiment}
-              currentStep={currentStep}
-              onStepChange={setCurrentStep}
-              onJumpToEvent={(idx) => {
-                setCurrentStep(idx + 1)
-                if (experiment?.events[idx]) {
-                  setLastModifiedMemoryId(experiment.events[idx].id)
-                }
-              }}
-              isPlaying={isPlaying}
-              onTogglePlay={() => setIsPlaying(!isPlaying)}
-              onStepForward={() => {
-                if (experiment) setCurrentStep((s) => Math.min(experiment.snapshots.length - 1, s + 1))
-              }}
-              onStepBackward={() => setCurrentStep((s) => Math.max(0, s - 1))}
-              mapPoints={memoryMap?.points || []}
-              graph={graph}
-              selectedMemoryId={selectedMemoryId}
-              onSelectMemory={setSelectedMemoryId}
-              lastModifiedMemoryId={lastModifiedMemoryId}
-              eventInspector={eventInspector}
-              onLaunchDemo={handleLaunchDemo}
-              onOpenCreateExperiment={() => setActiveWorkspace('lab')}
+              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
             />
+          )}
+
+          {activeWorkspace === 'collision' && (
+            <MemoryCollisionWorkspace />
+          )}
+
+          {activeWorkspace === 'observatory' && (
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%' }}>
+              <div style={{
+                display: 'flex',
+                gap: '0.5rem',
+                padding: '0.4rem 1.25rem',
+                background: 'rgba(15, 23, 42, 0.9)',
+                borderBottom: '1px solid rgba(51, 65, 85, 0.5)',
+                alignItems: 'center',
+              }}>
+                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', fontWeight: 700 }}>
+                  Observatory Mode:
+                </span>
+                <button
+                  className={`preset-chip ${observatoryMode === 'studio' ? 'active' : ''}`}
+                  onClick={() => setObservatoryMode('studio')}
+                >
+                  ⚡ Adaptive Studio (Phase 19)
+                </button>
+                <button
+                  className={`preset-chip ${observatoryMode === 'overview' ? 'active' : ''}`}
+                  onClick={() => setObservatoryMode('overview')}
+                >
+                  ○ Classic Overview (Phase 13)
+                </button>
+              </div>
+
+              {observatoryMode === 'studio' ? (
+                <ObservatoryStudioWorkspace />
+              ) : (
+                <ObservatoryWorkspace
+                  experiment={experiment}
+                  currentStep={currentStep}
+                  onStepChange={setCurrentStep}
+                  onJumpToEvent={(idx) => {
+                    setCurrentStep(idx + 1)
+                    if (experiment?.events[idx]) {
+                      setLastModifiedMemoryId(experiment.events[idx].id)
+                    }
+                  }}
+                  isPlaying={isPlaying}
+                  onTogglePlay={() => setIsPlaying(!isPlaying)}
+                  onStepForward={() => {
+                    if (experiment) setCurrentStep((s) => Math.min(experiment.snapshots.length - 1, s + 1))
+                  }}
+                  onStepBackward={() => setCurrentStep((s) => Math.max(0, s - 1))}
+                  mapPoints={memoryMap?.points || []}
+                  graph={graph}
+                  selectedMemoryId={selectedMemoryId}
+                  onSelectMemory={setSelectedMemoryId}
+                  lastModifiedMemoryId={lastModifiedMemoryId}
+                  eventInspector={eventInspector}
+                  onLaunchDemo={handleLaunchDemo}
+                  onOpenCreateExperiment={() => setActiveWorkspace('lab')}
+                />
+              )}
+            </div>
           )}
 
           {activeWorkspace === 'lab' && (
@@ -486,14 +582,11 @@ export default function App() {
           )}
 
           {activeWorkspace === 'detective' && (
-            <DetectiveWorkspace
-              experiment={experiment}
-              currentStep={currentStep}
-              onStepChange={setCurrentStep}
-              selectedMemoryId={selectedMemoryId}
-              onSelectMemory={setSelectedMemoryId}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
+            <MemoryDetectiveWorkspace />
+          )}
+
+          {activeWorkspace === 'research' && (
+            <ResearchLabWorkspace />
           )}
 
           {activeWorkspace === 'genome' && (
@@ -515,8 +608,48 @@ export default function App() {
               onViewEvidence={(title, details) => setEvidenceData({ title, details })}
             />
           )}
+
+          {activeWorkspace === 'studio' && (
+            <ExperimentStudioWorkspace
+              onNavigateToWorkspace={(ws) => setActiveWorkspace(ws as WorkspaceId)}
+            />
+          )}
+
+          {activeWorkspace === 'evidence' && (
+            <ScientificResearchWorkspace
+              onNavigateWorkspace={(ws) => setActiveWorkspace(ws as WorkspaceId)}
+            />
+          )}
         </main>
       </div>
+
+      {/* Floating Scientific Instrument Navigation Dock */}
+      <ImmersiveNavDock
+        activeWorkspace={activeWorkspace}
+        onSelectWorkspace={(ws) => {
+          if (ws === 'judge') {
+            setIsJudgeModeOpen(true)
+          } else {
+            setActiveWorkspace(ws)
+          }
+        }}
+        onOpenPortal={() => setIsImmersionPortalOpen(true)}
+        onOpenJudgeMode={() => setIsJudgeModeOpen(true)}
+      />
+
+      {/* Judge Mode Evaluation Tour Modal */}
+      {(isJudgeModeOpen || activeWorkspace === 'judge') && (
+        <JudgeModeExperience
+          onClose={() => {
+            setIsJudgeModeOpen(false)
+            if (activeWorkspace === 'judge') setActiveWorkspace('ecosystem')
+          }}
+          onExploreFreely={() => {
+            setIsJudgeModeOpen(false)
+            if (activeWorkspace === 'judge') setActiveWorkspace('ecosystem')
+          }}
+        />
+      )}
 
       {/* Forensic Slide-Over Inspector */}
       {selectedMemoryId && (

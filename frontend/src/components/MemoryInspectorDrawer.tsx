@@ -117,16 +117,18 @@ export const MemoryInspectorDrawer: React.FC<MemoryInspectorDrawerProps> = ({
     : []
 
   return (
-    <aside className="inspector-drawer">
+    <aside className="inspector-drawer" aria-label="Forensic Memory Inspector">
       {/* ── Excavation Header ────────────────────────────────────── */}
       <div className="drawer-header">
         <div className="drawer-header-top">
           <div className="drawer-title-group">
-            <span className="drawer-eyebrow">Excavation</span>
-            <span className="drawer-memory-id">{memoryId}</span>
-            {concept !== memoryId && (
-              <span className="drawer-concept">{concept}</span>
-            )}
+            <span className="drawer-eyebrow">FORENSIC MEMORY AUTOPSY</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+              <span className="drawer-memory-id">{memoryId}</span>
+              {concept !== memoryId && (
+                <span className="mono-badge cyan">{concept}</span>
+              )}
+            </div>
           </div>
           <button
             className="drawer-close"
@@ -140,23 +142,46 @@ export const MemoryInspectorDrawer: React.FC<MemoryInspectorDrawerProps> = ({
 
         {/* Strength bar */}
         <div className="drawer-strength-bar">
-          <span className="strength-label">strength</span>
+          <span className="strength-label">SYNAPTIC STRENGTH</span>
           <div className="strength-track">
             <div
               className={`strength-fill ${strengthClass}`}
               style={{ width: `${Math.min(100, effectiveStrength * 100).toFixed(1)}%` }}
             />
           </div>
-          <span className="strength-val" style={{ color: strengthColor }}>
-            {effectiveStrength.toFixed(3)}
+          <span className="strength-val" style={{ color: strengthColor, fontFamily: 'var(--font-mono)' }}>
+            {effectiveStrength.toFixed(4)}
           </span>
         </div>
       </div>
 
       <div className="drawer-body">
-        {/* ── Persistence Section ─────────────────────────────────── */}
+        {/* ── 1. IDENTITY ──────────────────────────────────────────── */}
         <div className="drawer-section">
-          <div className="drawer-section-title">Persistence</div>
+          <div className="drawer-section-title">1. IDENTITY & ENCODING</div>
+          <div className="drawer-metrics">
+            <div className="drawer-metric">
+              <span className="drawer-metric-label">Memory Identifier</span>
+              <span className="drawer-metric-val" style={{ fontFamily: 'var(--font-mono)' }}>{memoryId}</span>
+            </div>
+            <div className="drawer-metric">
+              <span className="drawer-metric-label">Concept Label</span>
+              <span className="drawer-metric-val accent">{concept}</span>
+            </div>
+            <div className="drawer-metric">
+              <span className="drawer-metric-label">Cluster Assigned</span>
+              <span className="drawer-metric-val">#{clusterId}</span>
+            </div>
+            <div className="drawer-metric">
+              <span className="drawer-metric-label">Trace Pattern</span>
+              <span className="drawer-metric-val" style={{ fontSize: 11 }}>{pattern}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* ── 2. CURRENT STATE & PERSISTENCE ──────────────────────── */}
+        <div className="drawer-section">
+          <div className="drawer-section-title">2. CURRENT STATE & PERSISTENCE</div>
           <PersistenceSparkline
             history={strengthProfile?.history}
             strength={strength}
@@ -164,38 +189,40 @@ export const MemoryInspectorDrawer: React.FC<MemoryInspectorDrawerProps> = ({
           />
           <div className="drawer-metrics" style={{ marginTop: 10 }}>
             <div className="drawer-metric">
-              <span className="drawer-metric-label">Peak</span>
+              <span className="drawer-metric-label">Peak Magnitude</span>
               <span className={`drawer-metric-val ${peakStrength > 0.6 ? 'emerald' : 'amber'}`}>
-                {peakStrength.toFixed(3)}
+                {peakStrength.toFixed(4)}
               </span>
             </div>
             <div className="drawer-metric">
-              <span className="drawer-metric-label">Reinforcements</span>
+              <span className="drawer-metric-label">Reinforcement Events</span>
               <span className="drawer-metric-val accent">{reinforcements}</span>
             </div>
             <div className="drawer-metric">
-              <span className="drawer-metric-label">Decay Pattern</span>
-              <span className="drawer-metric-val" style={{ fontSize: 11 }}>{pattern}</span>
+              <span className="drawer-metric-label">Fidelity Assessment</span>
+              <span className="drawer-metric-val" style={{ color: strengthColor }}>
+                {effectiveStrength >= 0.7 ? 'HIGH FIDELITY' : effectiveStrength >= 0.4 ? 'ATTENUATED' : 'CRITICAL DECAY'}
+              </span>
             </div>
             <div className="drawer-metric">
-              <span className="drawer-metric-label">Cluster</span>
-              <span className="drawer-metric-val">{clusterId}</span>
+              <span className="drawer-metric-label">Intervention State</span>
+              <span className="drawer-metric-val" style={{ color: interventionStrength !== null ? 'var(--amber)' : 'var(--text-muted)' }}>
+                {interventionStrength !== null ? 'MODIFIED' : 'ORIGINAL'}
+              </span>
             </div>
           </div>
         </div>
 
-        {/* ── Causal Influence Chain ──────────────────────────────── */}
-        {(causalDescendants.length > 0 || trace?.primary_competitor) && (
-          <div className="drawer-section">
-            <div className="drawer-section-title">Influence</div>
+        {/* ── 3. DYNAMICS & INFLUENCE ──────────────────────────────── */}
+        <div className="drawer-section">
+          <div className="drawer-section-title">3. DYNAMICS & CAUSAL INFLUENCE</div>
+          {(causalDescendants.length > 0 || trace?.primary_competitor) ? (
             <div className="influence-chain">
-              {/* Origin node */}
               <div className="influence-node origin">
                 <div className="influence-node-dot" />
                 <span className="influence-node-label">{memoryId}</span>
                 <span className="influence-arrow">↓</span>
               </div>
-              {/* Descendants */}
               {causalDescendants.map((descId) => (
                 <div key={descId} className="influence-node">
                   <div className="influence-node-dot" />
@@ -207,7 +234,6 @@ export const MemoryInspectorDrawer: React.FC<MemoryInspectorDrawerProps> = ({
                   )}
                 </div>
               ))}
-              {/* Primary competitor */}
               {trace?.primary_competitor && (
                 <div className="influence-node" style={{ marginTop: 6 }}>
                   <div
@@ -221,105 +247,115 @@ export const MemoryInspectorDrawer: React.FC<MemoryInspectorDrawerProps> = ({
                     className="influence-node-delta"
                     style={{ marginLeft: 'auto', color: 'var(--crimson)' }}
                   >
-                    competitor
+                    COMPETITOR
                   </span>
                 </div>
               )}
             </div>
-          </div>
-        )}
+          ) : (
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic', padding: '4px 0' }}>
+              No active cross-memory interference recorded for this node.
+            </div>
+          )}
 
-        {/* ── Forensic Explanation ────────────────────────────────── */}
-        {explanation && (
-          <div className="drawer-section">
-            <div className="drawer-section-title">Forensic Analysis</div>
-            <p className="explanation-block">{explanation.summary}</p>
-            {explanation.evidence && explanation.evidence.length > 0 && (
-              <div className="evidence-list">
-                {explanation.evidence.map((ev, i) => (
-                  <div key={i} className="evidence-item">
-                    <span className="evidence-marker">—</span>
-                    <span>{ev}</span>
-                  </div>
-                ))}
+          {/* Micro-Intervention Controls */}
+          <div className="intervention-panel" style={{ marginTop: '12px' }}>
+            <div className="intervention-header">
+              <span className="intervention-title">Micro-Intervention Slider</span>
+              {interventionStrength !== null && (
+                <span style={{ fontSize: 10, color: 'var(--amber)', fontFamily: 'var(--font-mono)' }}>
+                  Active: {interventionStrength.toFixed(2)}
+                </span>
+              )}
+            </div>
+            <div className="intervention-strength">
+              <div className="strength-slider-row">
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 14 }}>0</span>
+                <input
+                  type="range"
+                  className="strength-slider"
+                  min={0}
+                  max={1}
+                  step={0.01}
+                  value={effectiveStrength}
+                  onChange={(e) => setInterventionStrength(Number(e.target.value))}
+                  aria-label="Memory strength slider"
+                />
+                <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 14 }}>1</span>
               </div>
-            )}
-          </div>
-        )}
-
-        {/* ── Intervention Controls ───────────────────────────────── */}
-        <div className="intervention-panel">
-          <div className="intervention-header">
-            <span className="intervention-title">Intervene</span>
-            {interventionStrength !== null && (
-              <span style={{ fontSize: 10, color: 'var(--amber)' }}>
-                Modified: {interventionStrength.toFixed(2)}
-              </span>
-            )}
-          </div>
-          <div className="intervention-strength">
-            <div className="strength-slider-row">
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 14 }}>0</span>
-              <input
-                type="range"
-                className="strength-slider"
-                min={0}
-                max={1}
-                step={0.01}
-                value={effectiveStrength}
-                onChange={(e) => setInterventionStrength(Number(e.target.value))}
-                aria-label="Memory strength"
-              />
-              <span style={{ fontSize: 10, color: 'var(--text-muted)', minWidth: 14 }}>1</span>
+            </div>
+            <div className="intervention-actions">
+              <button
+                className="intervention-btn btn-emerald"
+                onClick={() => onSurgeryMemory(memoryId)}
+                title="Strengthen this synaptic memory in Surgery"
+              >
+                + Strengthen
+              </button>
+              <button
+                className="intervention-btn btn-amber"
+                onClick={() => onSurgeryMemory(memoryId)}
+                title="Weaken this synaptic memory in Surgery"
+              >
+                - Weaken
+              </button>
+              <button
+                className="intervention-btn btn-crimson"
+                onClick={() => onSurgeryMemory(memoryId)}
+                title="Ablate (zero) this memory in Surgery"
+              >
+                ✕ Ablate
+              </button>
+              <button
+                className="intervention-btn"
+                onClick={() => setInterventionStrength(null)}
+                title="Restore slider to true state"
+              >
+                ↺ Reset
+              </button>
             </div>
           </div>
-          <div className="intervention-actions">
-            <button
-              className="intervention-btn btn-emerald"
-              onClick={() => onSurgeryMemory(memoryId)}
-              title="Strengthen this memory"
-            >
-              Strengthen
-            </button>
-            <button
-              className="intervention-btn btn-amber"
-              onClick={() => onSurgeryMemory(memoryId)}
-              title="Weaken this memory"
-            >
-              Weaken
-            </button>
-            <button
-              className="intervention-btn btn-crimson"
-              onClick={() => onSurgeryMemory(memoryId)}
-              title="Ablate (remove) this memory"
-            >
-              Ablate
-            </button>
-            <button
-              className="intervention-btn"
-              onClick={() => setInterventionStrength(null)}
-              title="Restore to original"
-            >
-              Restore
-            </button>
-          </div>
+        </div>
+
+        {/* ── 4. EVIDENCE AUDIT ────────────────────────────────────── */}
+        <div className="drawer-section">
+          <div className="drawer-section-title">4. FORENSIC EVIDENCE AUDIT</div>
+          {explanation ? (
+            <>
+              <p className="explanation-block">{explanation.summary}</p>
+              {explanation.evidence && explanation.evidence.length > 0 && (
+                <div className="evidence-list" style={{ marginTop: '8px' }}>
+                  {explanation.evidence.map((ev, i) => (
+                    <div key={i} className="evidence-item">
+                      <span className="evidence-marker">▸</span>
+                      <span>{ev}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+              Standard Hebbian trace retention profile confirmed.
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Navigation Actions ───────────────────────────────────── */}
+      {/* ── 5. ACTION SUITE ──────────────────────────────────────── */}
       <div className="drawer-actions">
         <button
           className="drawer-action-btn btn-primary"
           onClick={() => onTraceMemory(memoryId)}
-          title="Full lifecycle trace"
+          title="Full temporal trace lifecycle"
         >
           <span className="drawer-action-icon">◎</span>
-          Trace Lifecycle
+          Trace Timeline
         </button>
         <button
           className="drawer-action-btn"
           onClick={() => onXRayMemory(memoryId)}
-          title="Weight matrix X-Ray"
+          title="Weight matrix substrate X-Ray"
         >
           <span className="drawer-action-icon">⌬</span>
           X-Ray Substrate
@@ -327,7 +363,7 @@ export const MemoryInspectorDrawer: React.FC<MemoryInspectorDrawerProps> = ({
         <button
           className="drawer-action-btn btn-violet"
           onClick={() => onCounterfactual(memoryId)}
-          title="Run counterfactual"
+          title="Branch counterfactual parallel world"
         >
           <span className="drawer-action-icon">⋈</span>
           Counterfactual
@@ -336,28 +372,29 @@ export const MemoryInspectorDrawer: React.FC<MemoryInspectorDrawerProps> = ({
           <button
             className="drawer-action-btn"
             onClick={() => onInvestigateMemory(memoryId)}
-            title="Detective investigation"
+            title="Launch diagnostic autopsy in Detective"
           >
             <span className="drawer-action-icon">◈</span>
-            Investigate
+            Detective
           </button>
         )}
         <button
           className="drawer-action-btn btn-ghost"
           onClick={() =>
-            onViewEvidence(`Memory ${memoryId} · Evidence`, {
+            onViewEvidence(`Memory ${memoryId} · Forensic Audit`, {
               memory_id: memoryId,
               concept_label: concept,
               final_strength: strength,
+              peak_strength: peakStrength,
               pattern,
               reinforcements,
               evidence: explanation?.evidence,
             })
           }
-          title="View raw evidence"
+          title="View raw evidence payload"
         >
           <span className="drawer-action-icon">⊞</span>
-          View Evidence
+          Evidence
         </button>
       </div>
     </aside>

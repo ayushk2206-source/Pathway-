@@ -1,0 +1,1314 @@
+/* ==========================================================================
+   SYNAPTIC SURGERY & MEMORY X-RAY — Scientific Workstation Styles (Phase 15)
+   ========================================================================== */
+
+.surgery-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  background: var(--bg-void);
+  color: var(--text-primary);
+  padding: 16px 24px 48px;
+  gap: 20px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.surgery-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.header-left-title .title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.surgery-header-glyph {
+  font-size: 22px;
+  color: var(--accent);
+}
+
+.surgery-header-h1 {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.surgery-phase-tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.surgery-header-sub {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 4px 0 0 32px;
+}
+
+.surgery-header-telemetry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.telemetry-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+.telemetry-pill .pill-label {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.telemetry-pill .pill-val {
+  font-weight: 600;
+}
+
+.surgery-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-scientific-info,
+.btn-refresh-state {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-clear);
+  color: var(--text-secondary);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 120ms ease;
+}
+
+.btn-scientific-info:hover,
+.btn-refresh-state:hover:not(:disabled) {
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
+/* ── Main Dual Grid ──────────────────────────────────────────────────── */
+.surgery-main-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 20px;
+}
+
+@media (max-width: 1200px) {
+  .surgery-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.surgery-left-col,
+.surgery-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Card Containers ─────────────────────────────────────────────────── */
+.canvas-wrapper-card,
+.xray-panel-card,
+.surgery-control-panel,
+.surgery-result-panel,
+.surgery-log-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 6px;
+  padding: 16px;
+}
+
+/* ── Canvas Section ──────────────────────────────────────────────────── */
+.canvas-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.canvas-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.xray-active-label {
+  font-size: 11px;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid var(--amber-border);
+  color: var(--amber);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+  font-family: var(--font-mono);
+}
+
+.canvas-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-mode-toggle {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-muted);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.btn-mode-toggle.active {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.canvas-footer-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dot-high { background: #f59e0b; }
+.dot-mod { background: #06b6d4; }
+.dot-weak { background: #64748b; }
+.dot-unrel { background: rgba(148, 163, 184, 0.2); }
+
+/* ── Memory X-Ray Panel ──────────────────────────────────────────────── */
+.xray-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.xray-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.xray-icon {
+  font-size: 20px;
+  color: var(--accent);
+}
+
+.xray-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.xray-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.branch-selector {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--bg-elevated);
+  padding: 3px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+}
+
+.branch-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  margin-right: 4px;
+}
+
+.btn-branch {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.btn-branch.active {
+  background: var(--bg-surface);
+  border-color: var(--border-clear);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.xray-form-strip {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  background: var(--bg-elevated);
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.xray-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 140px;
+}
+
+.xray-field label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.xray-input {
+  background: var(--bg-void);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.xray-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.btn-run-xray {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  padding: 7px 16px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 120ms ease;
+  white-space: nowrap;
+}
+
+.btn-run-xray:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: var(--accent);
+}
+
+.xray-summary-strip {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  background: var(--bg-void);
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+  flex-wrap: wrap;
+}
+
+.summary-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.summary-stat .lbl {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.summary-stat .val {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.synapse-table-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.filter-chip {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.filter-chip.active {
+  background: var(--border-muted);
+  color: var(--text-primary);
+  border-color: var(--border-clear);
+}
+
+.btn-select-high {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid var(--amber-border);
+  color: var(--amber);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.btn-select-high:hover {
+  background: rgba(245, 158, 11, 0.22);
+}
+
+.xray-synapses-table-scroll {
+  max-height: 280px;
+  overflow-y: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+}
+
+.synapse-xray-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+
+.synapse-xray-table th {
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  text-align: left;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-subtle);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.synapse-xray-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-deep);
+}
+
+.synapse-xray-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+  cursor: pointer;
+}
+
+.synapse-xray-table tr.row-selected {
+  background: rgba(56, 189, 248, 0.06);
+}
+
+.tier-badge {
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.tier-badge.tier-high { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.tier-badge.tier-moderate { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); }
+.tier-badge.tier-weak { background: rgba(100, 116, 139, 0.15); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3); }
+.tier-badge.tier-unrelated { background: transparent; color: var(--text-faint); }
+
+.btn-target-syn {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.btn-target-syn.active {
+  background: var(--accent-dim);
+  border-color: var(--accent-border);
+  color: var(--accent);
+}
+
+.table-overflow-note {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 6px;
+  background: var(--bg-elevated);
+  font-family: var(--font-mono);
+}
+
+/* ── Surgery Workbench Panel ─────────────────────────────────────────── */
+.surgery-control-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.surgery-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.surgery-panel-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.surgery-panel-icon {
+  font-size: 20px;
+  color: var(--amber);
+}
+
+.surgery-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.surgery-panel-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.badge-locked {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid var(--amber-border);
+  color: var(--amber);
+  font-family: var(--font-mono);
+}
+
+.badge-unlocked {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.surgery-toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-lock-baseline {
+  width: 100%;
+  background: var(--amber-dim);
+  border: 1px solid var(--amber-border);
+  color: var(--amber);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+  transition: all 120ms ease;
+}
+
+.btn-lock-baseline:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.22);
+}
+
+.surgery-locked-controls {
+  display: flex;
+  width: 100%;
+  gap: 8px;
+}
+
+.btn-reset-branch,
+.btn-re-lock {
+  flex: 1;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 11px;
+  padding: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.btn-reset-branch:hover:not(:disabled),
+.btn-re-lock:hover:not(:disabled) {
+  background: var(--bg-muted);
+  color: var(--text-primary);
+  border-color: var(--border-clear);
+}
+
+.surgery-telemetry-strip {
+  display: flex;
+  gap: 10px;
+  background: var(--bg-void);
+  padding: 8px 10px;
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+}
+
+.telem-item {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+}
+
+.telem-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.telem-val {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.surgery-selection-section {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.selection-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.selection-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.selection-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-text-action {
+  background: transparent;
+  border: none;
+  color: var(--accent);
+  font-size: 10px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+}
+
+.selected-synapses-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.synapse-pill {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  font-size: 10px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+}
+
+.synapse-pill-more {
+  font-size: 10px;
+  color: var(--text-muted);
+  padding: 1px 4px;
+  font-family: var(--font-mono);
+}
+
+.empty-selection-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.synapse-single-inspector {
+  background: var(--bg-void);
+  border: 1px solid var(--border-muted);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.syn-inspector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.syn-id-badge {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--accent);
+}
+
+.syn-path-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.syn-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.syn-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.syn-metric .lbl {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.syn-metric .val {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+}
+
+.surgery-operations-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.operation-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ablation-card {
+  border-color: rgba(244, 63, 94, 0.25);
+  background: rgba(244, 63, 94, 0.03);
+}
+
+.op-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.op-title {
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  letter-spacing: 0.05em;
+}
+
+.op-param {
+  font-size: 11px;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.surgery-slider {
+  width: 100%;
+}
+
+.btn-op {
+  width: 100%;
+  padding: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition: all 120ms ease;
+}
+
+.btn-weaken {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid var(--amber-border);
+  color: var(--amber);
+}
+
+.btn-strengthen {
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+}
+
+.btn-silence {
+  background: rgba(244, 63, 94, 0.15);
+  border: 1px solid var(--crimson-border);
+  color: var(--crimson);
+}
+
+.btn-restore {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
+}
+
+.ablation-explainer {
+  font-size: 9px;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.surgery-transparency-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(245, 158, 11, 0.05);
+  border: 1px solid var(--amber-border);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.banner-icon {
+  font-size: 13px;
+  color: var(--amber);
+}
+
+/* ── Result Panel ────────────────────────────────────────────────────── */
+.surgery-result-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.result-header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.result-icon {
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.title-text {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.sub-text {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.experiment-badge {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid var(--crimson-border);
+  color: var(--crimson);
+  font-weight: 600;
+}
+
+.recall-test-form {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 10px;
+}
+
+.recall-form-fields {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.recall-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 120px;
+}
+
+.recall-input-group label {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.concept-text-input {
+  background: var(--bg-void);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  padding: 5px 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+}
+
+.btn-run-recall {
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.comparison-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comparison-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+}
+
+.comparison-status-bar.status-agree {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid var(--emerald-border);
+  color: var(--emerald);
+}
+
+.comparison-status-bar.status-diverged {
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid var(--crimson-border);
+  color: var(--crimson);
+}
+
+.status-indicator-dot {
+  font-size: 8px;
+  margin-right: 6px;
+}
+
+.ops-count-tag {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.comparison-three-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.col-card {
+  background: var(--bg-void);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.col-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-deep);
+  padding-bottom: 4px;
+}
+
+.col-title {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+  color: var(--text-secondary);
+}
+
+.col-tag {
+  font-size: 9px;
+  font-family: var(--font-mono);
+}
+
+.col-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.metric-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+}
+
+.metric-row .m-label {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.metric-row .m-val {
+  font-weight: 600;
+}
+
+.comparison-caution-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-deep);
+}
+
+.empty-comparison-placeholder {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 12px;
+  background: var(--bg-elevated);
+  border-radius: 4px;
+  text-align: center;
+}
+
+/* ── Surgery Log Panel ───────────────────────────────────────────────── */
+.surgery-log-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.log-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.log-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.log-icon { font-size: 16px; }
+
+.log-title {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.log-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.log-disclaimer-tag {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.log-empty-state {
+  font-size: 11px;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 8px;
+}
+
+.log-entries-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.log-entry-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-void);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.log-entry-card:hover {
+  background: var(--bg-elevated);
+  border-color: var(--border-clear);
+}
+
+.entry-left-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 90px;
+}
+
+.entry-index {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+}
+
+.entry-type-tag {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+}
+
+.tag-rose { background: rgba(244, 63, 94, 0.15); color: #f43f5e; border: 1px solid rgba(244, 63, 94, 0.3); }
+.tag-cyan { background: rgba(6, 182, 212, 0.15); color: #06b6d4; border: 1px solid rgba(6, 182, 212, 0.3); }
+.tag-amber { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); }
+.tag-emerald { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+.entry-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+}
+
+.entry-title-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+}
+
+.entry-desc {
+  color: var(--text-primary);
+}
+
+.entry-time {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.entry-synapses-summary {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.entry-factor-tag {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  padding: 2px 6px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+}
+
+/* ── Methodology Modal ───────────────────────────────────────────────── */
+.methodology-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 20px;
+}
+
+.methodology-modal-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-clear);
+  border-radius: 8px;
+  max-width: 640px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.modal-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-family: var(--font-display);
+  margin: 0;
+}
+
+.btn-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn-modal-close:hover { color: var(--text-primary); }
+
+.modal-body h4 {
+  font-size: 13px;
+  margin: 16px 0 6px;
+  color: var(--accent);
+}
+
+.modal-body p,
+.modal-body ul {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.modal-body ul {
+  padding-left: 20px;
+}
+
+.math-block {
+  background: var(--bg-void);
+  border: 1px solid var(--border-subtle);
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  font-size: 12px;
+  margin: 8px 0;
+}
+
+.transparency-note-box {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid var(--amber-border);
+  padding: 10px 14px;
+  border-radius: 4px;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  margin-top: 12px;
+}

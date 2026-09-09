@@ -5,7 +5,7 @@
    ========================================================================== */
 
 /* ═══════════════════════════════════════════════════════════════════
-   TOP BAR
+   TOP BAR (Precision Telemetry & Command)
    ═══════════════════════════════════════════════════════════════════ */
 .topbar {
   height: var(--topbar-h);
@@ -14,31 +14,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 20px;
+  padding: 0 16px;
   user-select: none;
-  z-index: 100;
+  z-index: var(--z-topbar);
   flex-shrink: 0;
+  gap: 16px;
+  position: relative;
 }
 
 .topbar-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
+  flex-shrink: 0;
 }
 
 .topbar-center {
   display: flex;
   align-items: center;
-  gap: 12px;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  justify-content: center;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .topbar-right {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 /* Brand */
@@ -141,10 +145,9 @@
 
 
 /* ═══════════════════════════════════════════════════════════════════
-   COMMAND RAIL (Navigation)
+   COMMAND RAIL (Stable Scientific Navigation — Explicit State)
    ═══════════════════════════════════════════════════════════════════ */
 .command-rail {
-  width: var(--rail-w);
   background: var(--bg-void);
   border-right: 1px solid var(--border-subtle);
   display: flex;
@@ -154,11 +157,58 @@
   flex-shrink: 0;
   overflow: hidden;
   transition: width var(--dur-med) var(--ease-out);
-  z-index: 10;
+  z-index: var(--z-rail);
+  position: relative;
 }
 
-.command-rail:hover {
+/* Explicit width states — NO :hover expansion */
+.command-rail.collapsed {
+  width: var(--rail-w);
+}
+
+.command-rail.expanded {
   width: var(--rail-w-exp);
+}
+
+/* Rail Header / Toggle Button */
+.rail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.rail-toggle-btn {
+  width: 30px;
+  height: 28px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all var(--dur-fast) ease;
+}
+
+.rail-toggle-btn:hover {
+  background: var(--bg-elevated);
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
+.rail-header-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 /* Nav group */
@@ -166,19 +216,19 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 12px 0;
-  gap: 1px;
-  overflow: hidden;
+  padding: 8px 0;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .rail-section-label {
   font-size: 9px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--text-faint);
-  padding: 0 14px;
-  margin-bottom: 6px;
+  padding: 6px 12px 2px;
   margin-top: 4px;
   white-space: nowrap;
   overflow: hidden;
@@ -189,8 +239,8 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 14px;
+  gap: 10px;
+  padding: 8px 12px;
   background: transparent;
   border: none;
   border-radius: 0;
@@ -203,14 +253,15 @@
   transition: background var(--dur-fast) ease, color var(--dur-fast) ease;
   white-space: nowrap;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .rail-item::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 20%;
-  bottom: 20%;
+  top: 15%;
+  bottom: 15%;
   width: 2px;
   background: var(--accent);
   border-radius: 0 2px 2px 0;
@@ -219,9 +270,8 @@
 }
 
 .rail-item:hover {
-  background: var(--bg-elevated);
-  color: var(--text-secondary);
-  border-color: transparent;
+  background: var(--bg-surface);
+  color: var(--text-primary);
 }
 
 .rail-item.active {
@@ -235,50 +285,81 @@
 }
 
 .rail-icon {
-  font-size: 14px;
-  width: 20px;
+  font-size: 13px;
+  width: 26px;
+  height: 26px;
   text-align: center;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.7;
+  border-radius: 3px;
+  opacity: 0.75;
   transition: opacity var(--dur-fast) ease;
 }
 
 .rail-item:hover .rail-icon,
 .rail-item.active .rail-icon {
   opacity: 1;
+  color: var(--accent);
 }
 
 .rail-label {
   flex: 1;
   text-align: left;
-  opacity: 0;
-  transition: opacity var(--dur-med) ease;
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.command-rail:hover .rail-label { opacity: 1; }
+.rail-item.active .rail-label {
+  color: var(--text-primary);
+}
 
 .rail-shortcut {
   font-family: var(--font-mono);
   font-size: 9px;
   color: var(--text-faint);
-  opacity: 0;
-  transition: opacity var(--dur-med) ease;
+  padding: 1px 4px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
 }
 
-.command-rail:hover .rail-shortcut { opacity: 1; }
+/* Visibility based on explicit expanded/collapsed state ONLY */
+.command-rail.collapsed .rail-label,
+.command-rail.collapsed .rail-shortcut,
+.command-rail.collapsed .rail-section-label,
+.command-rail.collapsed .rail-header-title,
+.command-rail.collapsed .rail-footer-val {
+  display: none;
+}
+
+.command-rail.collapsed .rail-item {
+  justify-content: center;
+  padding: 6px 0;
+}
+
+.command-rail.expanded .rail-label,
+.command-rail.expanded .rail-shortcut,
+.command-rail.expanded .rail-section-label,
+.command-rail.expanded .rail-header-title,
+.command-rail.expanded .rail-footer-val {
+  display: block;
+}
 
 /* Footer */
 .rail-footer {
   border-top: 1px solid var(--border-subtle);
-  padding: 10px 14px;
+  padding: 8px 10px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   overflow: hidden;
+  flex-shrink: 0;
 }
 
 .rail-footer-row {
@@ -294,15 +375,13 @@
 .rail-footer-row .rail-icon {
   font-size: 10px;
   width: 16px;
-  opacity: 0.4;
+  height: 16px;
+  opacity: 0.5;
 }
 
 .rail-footer-val {
   color: var(--text-muted);
-  opacity: 0;
-  transition: opacity var(--dur-med) ease;
 }
-.command-rail:hover .rail-footer-val { opacity: 1; }
 
 
 /* ═══════════════════════════════════════════════════════════════════

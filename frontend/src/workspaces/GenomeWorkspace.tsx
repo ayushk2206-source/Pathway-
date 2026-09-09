@@ -18,6 +18,7 @@ import {
   runDoseResponse,
   getDependencyMatrix,
 } from '../api'
+import { SynapticFingerprintStudioWorkspace } from './SynapticFingerprintStudioWorkspace'
 
 interface Props {
   experiment: Experiment | null
@@ -52,6 +53,7 @@ export const GenomeWorkspace: React.FC<Props> = ({
   onSelectMemory,
   onViewEvidence,
 }) => {
+  const [workspaceMode, setWorkspaceMode] = useState<'fingerprint' | 'cascade'>('fingerprint')
   const [activeTab, setActiveTab] = useState<GenomeTab>('dna')
   const [genome, setGenome] = useState<MemoryGenome | null>(null)
   const [cascade, setCascade] = useState<CascadeMap | null>(null)
@@ -156,25 +158,26 @@ export const GenomeWorkspace: React.FC<Props> = ({
 
   const dna = genome?.dna_strip
 
-  if (!experiment) {
-    return (
-      <div className="workspace-empty-state">
-        <div className="empty-state-icon">🧬</div>
-        <h2>Memory Genome & Cascade Engine</h2>
-        <p>Run a memory experiment to inspect the structured genome of each memory — including origin, formation lineage, competitive associations, stability trajectory, and downstream cascade influence.</p>
-      </div>
-    )
-  }
-
-  return (
-    <div className="genome-workspace">
-      {/* Header */}
-      <div className="workspace-header">
-        <div className="workspace-title">
-          <span className="workspace-icon">🧬</span>
-          <span>MEMORY GENOME & CASCADE ENGINE</span>
-          <span className="workspace-badge">PHASE 08</span>
+  const renderCascadeContent = () => {
+    if (!experiment) {
+      return (
+        <div className="workspace-empty-state">
+          <div className="empty-state-icon">🧬</div>
+          <h2>Memory Genome & Cascade Engine</h2>
+          <p>Run a memory experiment to inspect the structured genome of each memory — including origin, formation lineage, competitive associations, stability trajectory, and downstream cascade influence.</p>
         </div>
+      )
+    }
+
+    return (
+      <div className="genome-workspace">
+        {/* Header */}
+        <div className="workspace-header">
+          <div className="workspace-title">
+            <span className="workspace-icon">🧬</span>
+            <span>MEMORY GENOME & CASCADE ENGINE</span>
+            <span className="workspace-badge">PHASE 08</span>
+          </div>
         <div className="workspace-meta">
           <span className="meta-chip">EXP: {expId?.slice(0, 12)}…</span>
           {memId && <span className="meta-chip active">MEM: {memId.slice(0, 16)}…</span>}
@@ -578,5 +581,76 @@ export const GenomeWorkspace: React.FC<Props> = ({
         )}
       </div>
     </div>
+    )
+  }
+
+  return (
+    <div className="genome-workspace-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
+      <div
+        className="workspace-mode-selector"
+        style={{
+          display: 'flex',
+          gap: '8px',
+          padding: '8px 16px',
+          backgroundColor: 'rgba(10, 15, 29, 0.95)',
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          alignItems: 'center',
+          flexShrink: 0,
+        }}
+      >
+        <button
+          className={`btn-mode-toggle ${workspaceMode === 'fingerprint' ? 'active' : ''}`}
+          onClick={() => setWorkspaceMode('fingerprint')}
+          style={{
+            padding: '6px 14px',
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            borderRadius: '4px',
+            border: workspaceMode === 'fingerprint' ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.12)',
+            backgroundColor: workspaceMode === 'fingerprint' ? 'rgba(56, 189, 248, 0.15)' : 'transparent',
+            color: workspaceMode === 'fingerprint' ? '#38bdf8' : '#94a3b8',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <span>⚡</span> SYNAPTIC FINGERPRINT (PHASE 20)
+        </button>
+        <button
+          className={`btn-mode-toggle ${workspaceMode === 'cascade' ? 'active' : ''}`}
+          onClick={() => setWorkspaceMode('cascade')}
+          style={{
+            padding: '6px 14px',
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.08em',
+            borderRadius: '4px',
+            border: workspaceMode === 'cascade' ? '1px solid #a855f7' : '1px solid rgba(255, 255, 255, 0.12)',
+            backgroundColor: workspaceMode === 'cascade' ? 'rgba(168, 85, 247, 0.15)' : 'transparent',
+            color: workspaceMode === 'cascade' ? '#c084fc' : '#94a3b8',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}
+        >
+          <span>🧬</span> CASCADE GENETICS (PHASE 08)
+        </button>
+        <span style={{ marginLeft: 'auto', fontSize: '10px', color: '#64748b', fontFamily: 'monospace' }}>
+          {workspaceMode === 'fingerprint' ? 'NEURAL FORENSIC SCANNER' : 'GENE CASCADE MAP'}
+        </span>
+      </div>
+
+      <div style={{ flex: 1, minHeight: 0, overflow: 'auto' }}>
+        {workspaceMode === 'fingerprint' ? (
+          <SynapticFingerprintStudioWorkspace />
+        ) : (
+          renderCascadeContent()
+        )}
+      </div>
+    </div>
   )
 }
+

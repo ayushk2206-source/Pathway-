@@ -78,3 +78,23 @@ class ReproduceCounterfactualRequest(BaseModel):
     intervention: InterventionPayload = Field(..., description="Intervention specification")
     expected_metrics: Dict[str, float] = Field(..., description="Expected metrics to verify match against")
     tolerance: float = Field(1e-9, ge=0.0, description="Numerical match tolerance")
+
+
+class SynapticInterventionRequest(BaseModel):
+    experiment_id: str = Field(..., description="Base experiment ID to branch from")
+    intervention_type: str = Field(..., description="synapse_prevent_strengthen, synapse_silence, synapse_scale, change_decay, change_plasticity")
+    synapse_id: Optional[str] = Field(None, description="Target synapse ID (e.g. syn_k3_v7)")
+    target_timestep: Optional[int] = Field(0, ge=0, description="Divergence timestep T")
+    factor: Optional[float] = Field(0.5, description="Scale factor (for synapse_scale)")
+    new_decay: Optional[float] = Field(None, description="New decay rate (for change_decay)")
+    new_update_strength: Optional[float] = Field(None, description="New update strength (for change_plasticity)")
+    title: Optional[str] = Field(None, description="Optional title for the branch")
+    hypothesis: Optional[str] = Field(None, description="Optional learner hypothesis before running")
+
+
+class SynapticCompareRequest(BaseModel):
+    original_experiment_id: str = Field(..., description="Original baseline experiment ID")
+    counterfactual_id: str = Field(..., description="Counterfactual branch ID or counterfactual experiment ID")
+    step_idx: int = Field(..., ge=0, description="Timestep T to synchronize and compare")
+    display_dim: int = Field(16, ge=2, le=64, description="Display dimension for network matrix")
+

@@ -62,17 +62,29 @@
   --font-display: 'Sora', 'Inter', sans-serif;
 
   /* ── Spatial Dimensions ──────────────────────────────────────── */
-  --topbar-h:   52px;
-  --rail-w:     52px;          /* collapsed */
-  --rail-w-exp: 220px;         /* expanded on hover */
-  --drawer-w:   400px;
+  --topbar-h:   50px;
+  --rail-w:     50px;          /* collapsed stable icon column */
+  --rail-w-exp: 240px;         /* explicitly expanded navigation */
+  --drawer-w:   420px;
+  --timeline-h: 56px;
+
+  /* ── Z-Index Hierarchy ────────────────────────────────────────── */
+  --z-base:      0;
+  --z-canvas:    5;
+  --z-rail:      20;
+  --z-topbar:    30;
+  --z-dock:      40;
+  --z-inspector: 50;
+  --z-modal-bg:  100;
+  --z-modal:     110;
+  --z-tooltip:   200;
 
   /* ── Motion ──────────────────────────────────────────────────── */
   --ease-out:  cubic-bezier(0.22, 1, 0.36, 1);
   --ease-snap: cubic-bezier(0.34, 1.56, 0.64, 1);
   --dur-fast:  120ms;
-  --dur-med:   240ms;
-  --dur-slow:  380ms;
+  --dur-med:   220ms;
+  --dur-slow:  340ms;
 }
 
 /* ── Reset ────────────────────────────────────────────────────────── */
@@ -88,6 +100,7 @@ html, body {
   font-size: 13px;
   line-height: 1.5;
   letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -493,3 +506,78 @@ button.primary:hover:not(:disabled) {
   cursor: pointer;
 }
 .close-btn:hover { color: var(--text-primary); }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PRECISION SCIENTIFIC INSTRUMENTATION UTILITIES
+   ═══════════════════════════════════════════════════════════════════ */
+.tech-grid {
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.hairline-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  width: 100%;
+  margin: 8px 0;
+}
+
+.mono-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.mono-badge.cyan {
+  color: var(--accent);
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+
+.mono-badge.violet {
+  color: var(--violet);
+  border-color: var(--violet-border);
+  background: var(--violet-dim);
+}
+
+.mono-badge.amber {
+  color: var(--amber);
+  border-color: var(--amber-border);
+  background: var(--amber-dim);
+}
+
+.mono-badge.emerald {
+  color: var(--emerald);
+  border-color: var(--emerald-border);
+  background: var(--emerald-dim);
+}
+
+.status-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.status-led.live {
+  background: var(--emerald);
+  box-shadow: 0 0 6px var(--emerald);
+}
+
+.status-led.busy {
+  background: var(--amber);
+  box-shadow: 0 0 6px var(--amber);
+}
+
+.status-led.idle {
+  background: var(--text-muted);
+}

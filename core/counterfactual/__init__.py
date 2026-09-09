@@ -31,6 +31,11 @@ from .interventions import (
     create_remove_intervention,
     create_replace_intervention,
     create_reset_memory_intervention,
+    create_synapse_prevent_strengthen_intervention,
+    create_synapse_scale_intervention,
+    create_synapse_silence_intervention,
+    create_change_decay_intervention,
+    create_change_plasticity_intervention,
     create_temporal_surgery_intervention,
     validate_intervention,
 )
@@ -38,11 +43,13 @@ from .models import CounterfactualExperiment
 from .replay import prepare_counterfactual_task, replay_counterfactual_engine
 from .runner import (
     compare_multiple_histories,
+    compare_synaptic_states_at_step,
     create_ablation,
     create_surgery,
     reproduce_counterfactual,
     run_counterfactual,
 )
+
 from .search import find_minimal_intervention, search_counterfactuals
 from .timeline import CounterfactualTree, Timeline, TimelineNode
 from .types import (
@@ -75,6 +82,11 @@ __all__ = [
     "create_freeze_memory_intervention",
     "create_inject_memory_intervention",
     "create_temporal_surgery_intervention",
+    "create_synapse_prevent_strengthen_intervention",
+    "create_synapse_scale_intervention",
+    "create_synapse_silence_intervention",
+    "create_change_decay_intervention",
+    "create_change_plasticity_intervention",
     # Timeline
     "Timeline",
     "TimelineNode",
@@ -93,6 +105,7 @@ __all__ = [
     "create_surgery",
     "reproduce_counterfactual",
     "compare_multiple_histories",
+    "compare_synaptic_states_at_step",
     # Diff & Explanation
     "diff_histories",
     "generate_counterfactual_explanation",

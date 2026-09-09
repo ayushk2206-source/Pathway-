@@ -20,13 +20,21 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .agency_routes import agency_router
 from .causal_routes import causal_router
+from .collision_routes import collision_router
 from .counterfactual_routes import router as counterfactual_router
 from .detective_routes import detective_router
+from .forensics_routes import forensics_router
 from .genome_routes import genome_router
 from .lab_routes import router as lab_router
 from .memory_routes import router as memory_router
 from .routes import router
+from .observatory_routes import observatory_router
+from .fingerprint_routes import fingerprint_router
+from .ecosystem_routes import ecosystem_router
+from .studio_routes import studio_router
+from .research_routes import research_router
 from .store import ExperimentStore
+from .surgery_routes import surgery_router
 from .synaptic_routes import synaptic_router
 from .xray_routes import xray_router
 
@@ -65,6 +73,14 @@ def create_app(store: ExperimentStore | None = None) -> FastAPI:
     app.include_router(genome_router, prefix="/api")
     app.include_router(causal_router, prefix="/api")
     app.include_router(synaptic_router, prefix="/api")
+    app.include_router(surgery_router, prefix="/api")
+    app.include_router(collision_router, prefix="/api")
+    app.include_router(forensics_router, prefix="/api")
+    app.include_router(observatory_router, prefix="/api")
+    app.include_router(fingerprint_router, prefix="/api")
+    app.include_router(ecosystem_router, prefix="/api")
+    app.include_router(studio_router)
+    app.include_router(research_router)
 
     @app.get("/health")
     def root_health() -> dict:

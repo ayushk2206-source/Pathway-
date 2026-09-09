@@ -16,6 +16,7 @@ interface SynapticNetworkCanvasProps {
   diffResult?: import('../types').StateDiffResult | null
   diffHighlightMode?: boolean
   memoryTrailActiveSynapses?: string[]
+  xrayRelevanceMap?: Map<string, { tier: string; score: number }>
 }
 
 export const SynapticNetworkCanvas: React.FC<SynapticNetworkCanvasProps> = ({
@@ -33,6 +34,7 @@ export const SynapticNetworkCanvas: React.FC<SynapticNetworkCanvasProps> = ({
   diffResult = null,
   diffHighlightMode = false,
   memoryTrailActiveSynapses = [],
+  xrayRelevanceMap,
 }) => {
   const [hoveredNeuronId, setHoveredNeuronId] = useState<string | null>(null)
   const [hoveredSynapseId, setHoveredSynapseId] = useState<string | null>(null)
@@ -170,14 +172,23 @@ export const SynapticNetworkCanvas: React.FC<SynapticNetworkCanvasProps> = ({
                   ? `rgba(244, 63, 94, ${0.15 + intensity * 0.85})`
                   : 'rgba(255, 255, 255, 0.03)'
 
+                const xray = xrayRelevanceMap?.get(synId)
+                let cellBg = bg
+                if (xrayRelevanceMap && xrayRelevanceMap.size > 0) {
+                  if (xray?.tier === 'high') cellBg = 'rgba(245, 158, 11, 0.85)'
+                  else if (xray?.tier === 'moderate') cellBg = 'rgba(6, 182, 212, 0.6)'
+                  else if (xray?.tier === 'weak') cellBg = 'rgba(100, 116, 139, 0.3)'
+                  else cellBg = 'rgba(255, 255, 255, 0.02)'
+                }
+
                 return (
                   <button
                     key={`${i}-${j}`}
                     type="button"
                     className={`matrix-cell ${isSelected ? 'selected' : ''} ${isActive ? 'active-path' : ''}`}
-                    style={{ backgroundColor: bg }}
+                    style={{ backgroundColor: cellBg }}
                     onClick={() => onSelectSynapse(synId)}
-                    title={`Synapse K${j} -> V${i} | Weight: ${weight.toFixed(4)}`}
+                    title={xray ? `Synapse K${j} -> V${i} | Weight: ${weight.toFixed(4)} | Relevance: ${xray.score.toFixed(4)} (${xray.tier})` : `Synapse K${j} -> V${i} | Weight: ${weight.toFixed(4)}`}
                   >
                     {dimension <= 16 && (
                       <span className="matrix-cell-text">
@@ -307,6 +318,31 @@ export const SynapticNetworkCanvas: React.FC<SynapticNetworkCanvasProps> = ({
                 strokeColor = '#c084fc'
                 strokeWidth = Math.max(strokeWidth, 3.4)
                 opacity = 0.95
+              } else if (xrayRelevanceMap && xrayRelevanceMap.size > 0) {
+                const xray = xrayRelevanceMap.get(syn.id)
+                if (xray) {
+                  if (xray.tier === 'high') {
+                    strokeColor = '#f59e0b'
+                    strokeWidth = Math.max(strokeWidth, 3.2)
+                    opacity = 0.95
+                  } else if (xray.tier === 'moderate') {
+                    strokeColor = '#06b6d4'
+                    strokeWidth = Math.max(strokeWidth, 2.2)
+                    opacity = 0.8
+                  } else if (xray.tier === 'weak') {
+                    strokeColor = '#64748b'
+                    strokeWidth = 1.2
+                    opacity = 0.35
+                  } else {
+                    strokeColor = 'rgba(148, 163, 184, 0.05)'
+                    strokeWidth = 0.8
+                    opacity = 0.08
+                  }
+                } else {
+                  strokeColor = 'rgba(148, 163, 184, 0.05)'
+                  strokeWidth = 0.8
+                  opacity = 0.05
+                }
               }
 
               // Curved bezier path for organic scientific look

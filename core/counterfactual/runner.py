@@ -260,3 +260,113 @@ def compare_multiple_histories(
         "metrics_comparison_table": _sanitize(comparison_table),
         "branch_comparisons": _sanitize(branches),
     }
+
+
+def compare_synaptic_states_at_step(
+    original_experiment: Experiment,
+    counterfactual_experiment: Experiment,
+    step_idx: int,
+    display_dim: int = 16,
+    divergence_step: Optional[int] = None,
+    intervention_desc: str = "",
+) -> Dict[str, Any]:
+    """Forensic synchronized network comparison between original and counterfactual at timestep T.
+
+    Computes:
+    - Side-by-side SynapticNetworkStates at the identical timestep.
+    - Exact per-synapse deltas: Δ = W_cf - W_orig.
+    - Global matrix Frobenius delta.
+    - Memory outcome deltas (recall accuracy, retrieval strength, readout norm).
+    - Side-by-side query prediction comparison.
+    """
+    from core.synaptic import extract_synaptic_state_from_experiment
+
+    # Extract network states at step T
+    orig_net = extract_synaptic_state_from_experiment(original_experiment, step_idx, display_dim=display_dim)
+    cf_net = extract_synaptic_state_from_experiment(counterfactual_experiment, step_idx, display_dim=display_dim)
+
+    W_orig = np.array(orig_net.matrix_weights, dtype=np.float64)
+    W_cf = np.array(cf_net.matrix_weights, dtype=np.float64)
+
+    # Compute delta matrix
+    delta_W = W_cf - W_orig
+    abs_delta_W = np.abs(delta_W)
+    frob_norm = float(np.linalg.norm(delta_W))
+    max_delta = float(np.max(abs_delta_W)) if abs_delta_W.size > 0 else 0.0
+
+    synaptic_deltas: List[Dict[str, Any]] = []
+    d = min(display_dim, W_orig.shape[0])
+
+    for i in range(d):
+        for j in range(d):
+            diff = float(delta_W[i, j])
+            if abs(diff) > 1e-5:
+                synaptic_deltas.append({
+                    "synapse_id": f"syn_k{j}_v{i}",
+                    "source": f"k_{j}",
+                    "target": f"v_{i}",
+                    "source_idx": j,
+                    "target_idx": i,
+                    "original_weight": float(W_orig[i, j]),
+                    "counterfactual_weight": float(W_cf[i, j]),
+                    "delta": diff,
+                    "abs_delta": abs(diff),
+                    "polarity_change": "strengthened" if diff > 0 else "weakened",
+                })
+
+    synaptic_deltas.sort(key=lambda x: x["abs_delta"], reverse=True)
+
+    # Compare query predictions
+    orig_preds = {p.get("query_id"): p for p in original_experiment.predictions}
+    cf_preds = {p.get("query_id"): p for p in counterfactual_experiment.predictions}
+
+    query_comparison: List[Dict[str, Any]] = []
+    for qid, op in orig_preds.items():
+        cp = cf_preds.get(qid, {})
+        orig_val = op.get("predicted_label") or op.get("predicted_symbol")
+        cf_val = cp.get("predicted_label") or cp.get("predicted_symbol")
+        orig_conf = float(op.get("similarity", op.get("confidence", 0.0)))
+        cf_conf = float(cp.get("similarity", cp.get("confidence", 0.0)))
+        changed = (orig_val != cf_val) or (abs(cf_conf - orig_conf) > 1e-4)
+
+        query_comparison.append({
+            "query_id": qid,
+            "object_label": op.get("object_label"),
+            "original_prediction": orig_val,
+            "counterfactual_prediction": cf_val,
+            "truth_label": op.get("truth_label"),
+            "original_confidence": orig_conf,
+            "counterfactual_confidence": cf_conf,
+            "confidence_delta": cf_conf - orig_conf,
+            "outcome_diverged": changed,
+        })
+
+    # Memory outcome metrics
+    orig_m = original_experiment.metrics
+    cf_m = counterfactual_experiment.metrics
+    metric_keys = ["recall_accuracy", "mean_retrieval_strength", "final_state_norm"]
+    outcome_deltas = {}
+    for mk in metric_keys:
+        val_o = float(orig_m.get(mk, 0.0))
+        val_c = float(cf_m.get(mk, 0.0))
+        outcome_deltas[mk] = {
+            "original": val_o,
+            "counterfactual": val_c,
+            "delta": val_c - val_o,
+        }
+
+    return {
+        "step_idx": int(step_idx),
+        "divergence_step": divergence_step,
+        "is_post_divergence": (divergence_step is not None and step_idx >= divergence_step),
+        "matrix_frobenius_delta": frob_norm,
+        "max_synaptic_delta": max_delta,
+        "changed_synapses_count": len(synaptic_deltas),
+        "original_network": orig_net.to_dict(),
+        "counterfactual_network": cf_net.to_dict(),
+        "synaptic_deltas": _sanitize(synaptic_deltas),
+        "outcome_deltas": _sanitize(outcome_deltas),
+        "query_comparison": _sanitize(query_comparison),
+        "variable_controlled": intervention_desc or "Single variable controlled computational intervention.",
+    }
+

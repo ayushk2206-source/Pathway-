@@ -1,0 +1,582 @@
+/* ==========================================================================
+   PATHWAY — PHASE 24: IMMERSIVE RESEARCH INTERFACE DESIGN SYSTEM
+   Aesthetic: Digital Neuroscience Lab × Scientific Instrument × Memory Universe
+   Tone: Neural, Organic, Technical, Dark, Precise, Immersive, Minimal, Alive
+   ========================================================================== */
+
+:root {
+  /* Deep Spatial Layers */
+  --space-void: #030712;
+  --space-deep: #060d1b;
+  --space-matrix: #0a1426;
+  --space-surface: #0f1c35;
+  --space-elevated: #162645;
+  --space-overlay: rgba(6, 13, 27, 0.85);
+
+  /* Restrained Bioluminescent Accents */
+  --synapse-cyan: #38bdf8;
+  --synapse-cyan-glow: rgba(56, 189, 248, 0.25);
+  --synapse-emerald: #10b981;
+  --synapse-emerald-glow: rgba(16, 185, 129, 0.25);
+  --synapse-amber: #f59e0b;
+  --synapse-amber-glow: rgba(245, 158, 11, 0.25);
+  --synapse-rose: #f43f5e;
+  --synapse-rose-glow: rgba(244, 63, 94, 0.25);
+  --synapse-purple: #a855f7;
+  --synapse-purple-glow: rgba(168, 85, 247, 0.25);
+
+  /* Scientific Instrument Lines & Grids */
+  --line-grid: rgba(56, 189, 248, 0.08);
+  --line-bright: rgba(56, 189, 248, 0.25);
+  --line-focus: #38bdf8;
+
+  /* Typography Stacks */
+  --font-hero: 'Sora', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-data: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
+}
+
+/* ==========================================================================
+   1. IMMERSION ENTRY HERO (THE PORTAL INTO THE MEMORY SYSTEM)
+   ========================================================================== */
+
+.immersion-hero-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: radial-gradient(circle at 50% 50%, #08152e 0%, #030712 80%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.immersion-hero-overlay.exiting {
+  opacity: 0;
+  transform: scale(1.08);
+  pointer-events: none;
+}
+
+.immersion-canvas-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: auto;
+}
+
+.immersion-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 820px;
+  padding: 2rem;
+  pointer-events: auto;
+}
+
+.immersion-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.immersion-sys-tag {
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  backdrop-filter: blur(8px);
+}
+
+.immersion-title {
+  font-family: var(--font-hero);
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #f8fafc;
+  line-height: 1;
+  margin: 0 0 1rem 0;
+  text-shadow: 0 0 40px rgba(56, 189, 248, 0.3);
+}
+
+.immersion-subtitle {
+  font-family: var(--font-hero);
+  font-size: clamp(1rem, 2.2vw, 1.35rem);
+  font-weight: 500;
+  color: #94a3b8;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 1.5rem;
+}
+
+.immersion-description {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: #cbd5e1;
+  max-width: 640px;
+  margin-bottom: 2.5rem;
+}
+
+.immersion-enter-btn {
+  position: relative;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  font-family: var(--font-hero);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 1rem 2.5rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 0 25px rgba(56, 189, 248, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.immersion-enter-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 0 45px rgba(56, 189, 248, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border-color: #38bdf8;
+}
+
+.immersion-enter-btn:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.immersion-footnote {
+  margin-top: 2rem;
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+/* ==========================================================================
+   2. FLOATING SCIENTIFIC INSTRUMENT DOCK (IMMERSIVE NAVIGATION)
+   ========================================================================== */
+
+.immersive-nav-dock {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5000;
+  background: rgba(10, 20, 38, 0.85);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 9999px;
+  padding: 0.4rem 0.6rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6), 0 0 20px rgba(56, 189, 248, 0.15);
+  max-width: calc(100vw - 2rem);
+  overflow-x: auto;
+}
+
+.dock-item-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  padding: 0.5rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.dock-item-btn:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dock-item-btn.active {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+}
+
+.dock-item-shortcut {
+  font-family: var(--font-data);
+  font-size: 0.65rem;
+  background: rgba(0, 0, 0, 0.35);
+  color: #64748b;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dock-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(148, 163, 184, 0.2);
+  margin: 0 0.2rem;
+}
+
+/* ==========================================================================
+   3. LIVING MEMORY OBJECT (THE FINGERPRINT)
+   ========================================================================== */
+
+.living-memory-object {
+  background: rgba(15, 28, 53, 0.85);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 14px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.living-memory-object:hover {
+  border-color: rgba(56, 189, 248, 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.2);
+}
+
+.memory-object-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.memory-concept-label {
+  font-family: var(--font-hero);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+}
+
+.memory-value-pill {
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.memory-spark-wave {
+  width: 100%;
+  height: 36px;
+  background: rgba(3, 7, 18, 0.6);
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 0 0.5rem;
+}
+
+.memory-wave-bar {
+  width: 3px;
+  background: #38bdf8;
+  border-radius: 2px;
+  transition: height 0.3s ease;
+}
+
+.memory-metrics-strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+}
+
+.memory-metric-cell {
+  background: rgba(6, 13, 27, 0.6);
+  padding: 0.4rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.metric-cell-label {
+  color: #64748b;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+}
+
+.metric-cell-val {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.memory-microscope-btn {
+  background: transparent;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+}
+
+.memory-microscope-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   4. SYNAPTIC FLOW VISUALIZER (ACTIVITY -> WRITE -> STATE -> RECALL)
+   ========================================================================== */
+
+.synaptic-flow-banner {
+  background: rgba(10, 20, 38, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 14px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  overflow-x: auto;
+}
+
+.flow-step {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+}
+
+.flow-step-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(15, 28, 53, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.flow-step.active .flow-step-icon {
+  background: #0284c7;
+  border-color: #38bdf8;
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
+}
+
+.flow-step-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.flow-step-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #e2e8f0;
+}
+
+.flow-step-sub {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-family: var(--font-data);
+}
+
+.flow-arrow {
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   5. SYNAPTIC MICROSCOPE (DEEP STATE X-RAY MODAL)
+   ========================================================================== */
+
+.microscope-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  background: rgba(3, 7, 18, 0.85);
+  backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.microscope-modal-frame {
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  background: #091224;
+  border: 1px solid rgba(56, 189, 248, 0.4);
+  border-radius: 18px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(56, 189, 248, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.microscope-header {
+  padding: 1.25rem 1.75rem;
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(15, 28, 53, 0.5);
+}
+
+.microscope-body {
+  padding: 1.75rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.microscope-reticle {
+  position: relative;
+  background: radial-gradient(circle at 50% 50%, rgba(56, 189, 248, 0.12) 0%, rgba(3, 7, 18, 0.9) 70%);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   6. SPLIT UNIVERSE A/B COMPARATOR
+   ========================================================================== */
+
+.split-universe-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 900px) {
+  .split-universe-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.universe-panel {
+  background: rgba(10, 20, 38, 0.85);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 14px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  backdrop-filter: blur(8px);
+}
+
+.universe-panel.world-a {
+  border-color: rgba(56, 189, 248, 0.35);
+}
+
+.universe-panel.world-b {
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+.universe-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 0.65rem;
+}
+
+/* ==========================================================================
+   7. CUSTOM SCIENTIFIC CURSOR
+   ========================================================================== */
+
+.custom-pointer-dot {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background: #38bdf8;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.08s ease-out;
+  box-shadow: 0 0 10px #38bdf8;
+}
+
+.custom-pointer-ring {
+  position: fixed;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transform: translate(-50%, -50%);
+  transition: width 0.2s ease, height 0.2s ease, border-color 0.2s ease, transform 0.15s ease-out;
+}
+
+.custom-pointer-ring.inspect {
+  width: 44px;
+  height: 44px;
+  border-color: #38bdf8;
+  border-style: dashed;
+}
+
+.custom-pointer-ring.surgery {
+  width: 36px;
+  height: 36px;
+  border-color: #f43f5e;
+}
+
+/* ==========================================================================
+   8. ACCESSIBILITY: REDUCED MOTION PREFERENCES
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .custom-pointer-dot,
+  .custom-pointer-ring {
+    display: none !important;
+  }
+}

@@ -230,15 +230,49 @@ def prepare_counterfactual_task(
         for i in range(t_start, min(t_end + 1, len(events))):
             events[i].strength = float(events[i].strength * factor)
 
-    elif itype in {InterventionType.RESET_MEMORY, InterventionType.FREEZE_MEMORY, InterventionType.TEMPORAL_FREEZE}:
+    elif itype in {
+        InterventionType.RESET_MEMORY,
+        InterventionType.FREEZE_MEMORY,
+        InterventionType.TEMPORAL_FREEZE,
+        InterventionType.SYNAPSE_PREVENT_STRENGTHEN,
+        InterventionType.SYNAPSE_SILENCE,
+        InterventionType.SYNAPSE_SCALE,
+        InterventionType.CHANGE_DECAY,
+        InterventionType.CHANGE_PLASTICITY,
+    }:
         # These dynamic interventions are applied during the execution replay loop
         if itype == InterventionType.RESET_MEMORY:
             branch_point = _resolve_target_timestep(original_experiment, intervention)
-        else:
+        elif itype in {InterventionType.FREEZE_MEMORY, InterventionType.TEMPORAL_FREEZE}:
             branch_point = int(p.get("start_timestep", 0))
+        else:
+            branch_point = intervention.target_timestep if intervention.target_timestep is not None else int(p.get("target_timestep", 0))
 
     task_cfg.events = events
     return task_cfg, branch_point
+
+
+def _parse_synapse_coords(params: Dict[str, Any]) -> Tuple[int, int]:
+    """Parse synapse target coordinates (target_row, source_col) from intervention parameters."""
+    if "target_idx" in params and "source_idx" in params:
+        return int(params["target_idx"]), int(params["source_idx"])
+    syn_id = str(params.get("synapse_id", ""))
+    parts = syn_id.split("_")
+    if len(parts) == 3 and parts[0] == "syn" and parts[1].startswith("k") and parts[2].startswith("v"):
+        try:
+            return int(parts[2][1:]), int(parts[1][1:])
+        except ValueError:
+            pass
+    if "_" in syn_id:
+        sub = syn_id.split("_")
+        try:
+            k_part = [s for s in sub if s.startswith("k")]
+            v_part = [s for s in sub if s.startswith("v")]
+            if k_part and v_part:
+                return int(v_part[0][1:]), int(k_part[0][1:])
+        except Exception:
+            pass
+    return (0, 0)
 
 
 def replay_counterfactual_engine(
@@ -270,6 +304,11 @@ def replay_counterfactual_engine(
         InterventionType.RESET_MEMORY,
         InterventionType.FREEZE_MEMORY,
         InterventionType.TEMPORAL_FREEZE,
+        InterventionType.SYNAPSE_PREVENT_STRENGTHEN,
+        InterventionType.SYNAPSE_SILENCE,
+        InterventionType.SYNAPSE_SCALE,
+        InterventionType.CHANGE_DECAY,
+        InterventionType.CHANGE_PLASTICITY,
     } or strategy == ReplayStrategy.CHECKPOINT
 
     if not needs_custom_loop:
@@ -277,9 +316,19 @@ def replay_counterfactual_engine(
         cf_exp = run_experiment(cf_config, replay_of=original_experiment.experiment_id)
         return cf_exp, branch_point
 
-    # Custom loop handling dynamic state reset, freeze, or checkpoint replay
+    # Custom loop handling dynamic state reset, freeze, synaptic surgery, or parameter shifts
     task = generate_task(cf_config.task, fallback_seed=cf_config.seed)
     mech = create_mechanism(cf_config.mechanism, cf_config.params, seed=cf_config.seed)
+
+    # Initial adjustments if branch_point == 0
+    if itype == InterventionType.CHANGE_DECAY and branch_point == 0:
+        new_decay = float(p.get("new_decay", mech.params.decay))
+        mech.params.decay = new_decay
+        cf_config.params.decay = new_decay
+    elif itype == InterventionType.CHANGE_PLASTICITY and branch_point == 0:
+        new_str = float(p.get("new_update_strength", mech.params.update_strength))
+        mech.params.update_strength = new_str
+        cf_config.params.update_strength = new_str
 
     queries_by_time: Dict[int, List] = defaultdict(list)
     for q in task.queries:
@@ -299,10 +348,33 @@ def replay_counterfactual_engine(
     freeze_start = int(p.get("start_timestep", -1)) if itype in {InterventionType.FREEZE_MEMORY, InterventionType.TEMPORAL_FREEZE} else -1
     freeze_end = int(p.get("end_timestep", -1)) if itype in {InterventionType.FREEZE_MEMORY, InterventionType.TEMPORAL_FREEZE} else -1
 
+    target_row, source_col = _parse_synapse_coords(p) if itype in {
+        InterventionType.SYNAPSE_PREVENT_STRENGTHEN,
+        InterventionType.SYNAPSE_SILENCE,
+        InterventionType.SYNAPSE_SCALE,
+    } else (0, 0)
+    pre_branch_weight: Optional[float] = None
+
     query_results: List[QueryResult] = []
     for t, event in enumerate(task.events):
         if t == reset_t:
             mech.initialize()
+
+        # At divergence step, capture baseline weight before this event is written
+        if t == branch_point:
+            if itype == InterventionType.CHANGE_DECAY:
+                mech.params.decay = float(p.get("new_decay", mech.params.decay))
+            elif itype == InterventionType.CHANGE_PLASTICITY:
+                mech.params.update_strength = float(p.get("new_update_strength", mech.params.update_strength))
+            elif itype == InterventionType.SYNAPSE_PREVENT_STRENGTHEN:
+                if mech.state_is_matrix:
+                    if target_row < mech._state.shape[0] and source_col < mech._state.shape[1]:
+                        pre_branch_weight = float(mech._state[target_row, source_col])
+                    else:
+                        pre_branch_weight = 0.0
+                else:
+                    dim = target_row % mech._state.shape[0]
+                    pre_branch_weight = float(mech._state[dim])
 
         if freeze_start <= t <= freeze_end and freeze_start != -1:
             # Frozen: skip write, apply idle dynamics if decay exists
@@ -312,6 +384,41 @@ def replay_counterfactual_engine(
             trace = mech.update(event)
             if cf_config.update_steps_per_event > 1:
                 trace["extra_steps"] = mech.step_no_input(cf_config.update_steps_per_event - 1)
+
+        # Apply post-write synaptic intervention starting at branch_point
+        if t >= branch_point:
+            if itype == InterventionType.SYNAPSE_PREVENT_STRENGTHEN and pre_branch_weight is not None:
+                if mech.state_is_matrix:
+                    if target_row < mech._state.shape[0] and source_col < mech._state.shape[1]:
+                        curr = float(mech._state[target_row, source_col])
+                        if pre_branch_weight >= 0:
+                            mech._state[target_row, source_col] = min(curr, pre_branch_weight)
+                        else:
+                            mech._state[target_row, source_col] = max(curr, pre_branch_weight)
+                else:
+                    dim = target_row % mech._state.shape[0]
+                    curr = float(mech._state[dim])
+                    if pre_branch_weight >= 0:
+                        mech._state[dim] = min(curr, pre_branch_weight)
+                    else:
+                        mech._state[dim] = max(curr, pre_branch_weight)
+
+            elif itype == InterventionType.SYNAPSE_SILENCE:
+                if mech.state_is_matrix:
+                    if target_row < mech._state.shape[0] and source_col < mech._state.shape[1]:
+                        mech._state[target_row, source_col] = 0.0
+                else:
+                    dim = target_row % mech._state.shape[0]
+                    mech._state[dim] = 0.0
+
+            elif itype == InterventionType.SYNAPSE_SCALE and t == branch_point:
+                factor = float(p.get("factor", 0.5))
+                if mech.state_is_matrix:
+                    if target_row < mech._state.shape[0] and source_col < mech._state.shape[1]:
+                        mech._state[target_row, source_col] *= factor
+                else:
+                    dim = target_row % mech._state.shape[0]
+                    mech._state[dim] *= factor
 
         snap = mech.get_state_snapshot()
         snap["timestep"] = t + 1

@@ -267,6 +267,124 @@ export interface MemoryMap2D {
   disclaimer: string
 }
 
+// ---------------------------------------------------------------------------
+// Phase 15: Synaptic Surgery & Memory X-Ray types
+// ---------------------------------------------------------------------------
+
+export interface SurgeryOperation {
+  op_id: string
+  operation: 'silence' | 'weaken' | 'strengthen' | 'restore' | 'restore_all'
+  synapse_ids: string[]
+  factor: number | null
+  timestamp_step: number
+  weight_deltas: Record<string, number>
+  description: string
+}
+
+export interface SurgeryRecallComparison {
+  query_concept: string
+  expected_value: string | null
+  baseline: {
+    predicted: string | null
+    confidence: number
+    fidelity: number
+    readout_norm: number
+    top_synapse_ids: string[]
+  }
+  surgery: {
+    predicted: string | null
+    confidence: number
+    fidelity: number
+    readout_norm: number
+    top_synapse_ids: string[]
+  }
+  change: {
+    delta_confidence: number
+    delta_fidelity: number
+    delta_readout_norm: number
+    agreement: boolean
+  }
+  operations_applied: number
+  experiment_label: string
+  caution_note: string
+}
+
+export interface SurgerySession {
+  session_id: string
+  seed: number
+  d: number
+  mechanism: string
+  baseline_timestep: number
+  surgery_op_count: number
+  operations: SurgeryOperation[]
+  last_comparison: SurgeryRecallComparison | null
+  library_size: number
+  surgery_matrix_norm: number
+  baseline_matrix_norm: number
+}
+
+export interface SynapseXRay {
+  synapse_id: string
+  source: string
+  target: string
+  source_idx: number
+  target_idx: number
+  current_weight: number
+  baseline_weight: number
+  weight_before: number
+  delta_weight: number
+  abs_weight: number
+  tier: string
+  polarity: string
+  relevance_score: number
+  relevance_tier: 'high' | 'moderate' | 'weak' | 'unrelated'
+  k_query_component: number
+  contribution_to_readout: number
+  last_update_timestep: number
+  plasticity_trace: number
+}
+
+export interface MemoryXRay {
+  query_concept: string
+  expected_value: string | null
+  dimension: number
+  seed: number
+  branch?: string
+  summary: {
+    total_synapses_analyzed: number
+    highly_relevant: number
+    moderately_relevant: number
+    weakly_relevant: number
+    unrelated: number
+  }
+  synapses: SynapseXRay[]
+  readout: {
+    norm: number
+    top_confidence: number
+    predicted_value: string | null
+  }
+  transparency: {
+    metric_description: string
+    disclaimer: string
+  }
+}
+
+export interface SynapseXRayDetail {
+  synapse_id: string
+  source: string
+  target: string
+  source_idx: number
+  target_idx: number
+  baseline_weight: number
+  surgery_weight: number
+  weight_delta: number
+  abs_baseline: number
+  abs_surgery: number
+  is_modified: boolean
+  operations_applied: SurgeryOperation[]
+  disclaimer: string
+}
+
 export interface MemoryTrace {
   memory_id: string
   concept_label: string
@@ -1210,4 +1328,1092 @@ export interface SynapticInfo {
     similarity_metric: string
   }
   disclaimer: string
+}
+
+// ==========================================
+// Phase 16 Counterfactual / What-If Engine Types
+// ==========================================
+
+export interface SynapticInterventionPayload {
+  experiment_id: string
+  intervention_type: 'synapse_prevent_strengthen' | 'synapse_silence' | 'synapse_scale' | 'change_decay' | 'change_plasticity'
+  synapse_id?: string
+  target_timestep?: number
+  factor?: number
+  new_decay?: number
+  new_update_strength?: number
+  title?: string
+  hypothesis?: string
+}
+
+export interface SynapticInterventionResponse {
+  status: string
+  counterfactual: CounterfactualExperiment
+  counterfactual_id: string
+  branch_point: number
+  variable_controlled: string
+  metrics_original: Record<string, number>
+  metrics_counterfactual: Record<string, number>
+}
+
+export interface SynapticDeltaItem {
+  synapse_id: string
+  source: string
+  target: string
+  source_idx: number
+  target_idx: number
+  original_weight: number
+  counterfactual_weight: number
+  delta: number
+  abs_delta: number
+  polarity_change: 'strengthened' | 'weakened'
+}
+
+export interface QueryOutcomeComparison {
+  query_id: string
+  object_label: string
+  original_prediction: string | null
+  counterfactual_prediction: string | null
+  truth_label?: string | null
+  original_confidence: number
+  counterfactual_confidence: number
+  confidence_delta: number
+  outcome_diverged: boolean
+}
+
+export interface SynapticCompareResponse {
+  step_idx: number
+  divergence_step: number | null
+  is_post_divergence: boolean
+  matrix_frobenius_delta: number
+  max_synaptic_delta: number
+  changed_synapses_count: number
+  original_network: SynapticNetworkState
+  counterfactual_network: SynapticNetworkState
+  synaptic_deltas: SynapticDeltaItem[]
+  outcome_deltas: Record<string, { original: number; counterfactual: number; delta: number }>
+  query_comparison: QueryOutcomeComparison[]
+  variable_controlled: string
+}
+
+export interface ExperimentBranchSummary {
+  branch_id: string
+  title: string
+  description: string
+  intervention_type: string
+  divergence_step: number
+  target_synapse?: string
+  original_accuracy?: number
+  counterfactual_accuracy?: number
+  accuracy_delta: number
+  created_at: string
+  status: string
+}
+
+export interface ExperimentBranchesResponse {
+  experiment_id: string
+  total_branches: number
+  branches: ExperimentBranchSummary[]
+}
+
+// ---------------------------------------------------------------------------
+// Phase 17: Memory Collision & Interference Lab Types
+// ---------------------------------------------------------------------------
+
+export interface CollisionMemory {
+  concept: string
+  value: string
+  importance: number
+  strength: number
+}
+
+export interface CollisionConfig {
+  seed: number
+  dimension: number
+  decay: number
+  update_strength: number
+  memory_a: CollisionMemory
+  memory_b: CollisionMemory
+  memory_c?: CollisionMemory | null
+  order: 'A_THEN_B' | 'B_THEN_A'
+  temporal_delay: number
+  overlap_preset: 'LOW' | 'MODERATE' | 'HIGH' | 'CUSTOM'
+  concept_similarity: number
+}
+
+export interface SynapticPathwayClassification {
+  synapse_id: string
+  source: string
+  target: string
+  source_idx: number
+  target_idx: number
+  classification: 'A_ONLY' | 'B_ONLY' | 'SHARED' | 'UNCHANGED'
+  weight_after_first: number
+  weight_delta_second: number
+  final_weight: number
+  overwrite_magnitude: number
+}
+
+export interface CollisionRecallStats {
+  concept: string
+  value: string
+  fidelity: number
+  strength: number
+  readout_norm: number
+  is_correct: boolean
+  crosstalk_leakage?: number
+  gain?: number
+  matrix_norm?: number
+}
+
+export interface CollisionTimelineStep {
+  step: number
+  event_type: string
+  label: string
+  concept?: string
+  matrix_weights?: number[][]
+  matrix_norm: number
+  delta_norm?: number
+  fidelity?: number
+  crosstalk?: number
+}
+
+export interface CollisionResult {
+  collision_id: string
+  config: CollisionConfig
+  representational_overlap: number
+  synaptic_overlap_fraction: number
+  matrix_correlation: number
+  timeline: CollisionTimelineStep[]
+  isolated_recall_a: CollisionRecallStats
+  isolated_recall_b: CollisionRecallStats
+  combined_recall_a: CollisionRecallStats
+  combined_recall_b: CollisionRecallStats
+  computational_interference_a: number
+  computational_interference_b: number
+  overall_computational_interference: number
+  memory_dominance: 'MEMORY_A' | 'MEMORY_B' | 'BALANCED'
+  dominant_memory_margin: number
+  a_only_synapses: string[]
+  b_only_synapses: string[]
+  shared_synapses: string[]
+  collision_map: SynapticPathwayClassification[]
+  experiment_report: {
+    question: string
+    conditions: Record<string, unknown>
+    overlap_measure: Record<string, unknown>
+    results: Record<string, unknown>
+    interpretation: string
+  }
+  final_network_state: SynapticNetworkState
+  isolated_recall_c?: CollisionRecallStats | null
+  combined_recall_c?: CollisionRecallStats | null
+}
+
+export interface RecallMatrixRow {
+  condition: string
+  concept_similarity: number
+  representational_overlap: number
+  synaptic_overlap_fraction: number
+  recall_a: number
+  recall_b: number
+  interference: number
+  shared_synapses: number
+  dominant: string
+}
+
+export interface ThreeConditionResult {
+  recall_matrix: RecallMatrixRow[]
+  low_result: CollisionResult
+  moderate_result: CollisionResult
+  high_result: CollisionResult
+}
+
+export interface OrderComparisonResult {
+  comparison_title: string
+  matrix_frobenius_difference: number
+  order_a_then_b: {
+    order: string
+    recall_a: number
+    recall_b: number
+    interference_a: number
+    interference_b: number
+    dominant_memory: string
+  }
+  order_b_then_a: {
+    order: string
+    recall_a: number
+    recall_b: number
+    interference_a: number
+    interference_b: number
+    dominant_memory: string
+  }
+  order_asymmetry_detected: boolean
+  scientific_note: string
+  result_ab: CollisionResult
+  result_ba: CollisionResult
+}
+
+export interface CollisionSurgeryResult {
+  status: string
+  operation: string
+  target_synapse: string
+  original_weight: number
+  post_surgery_weight: number
+  weight_delta: number
+  recall_a_before: number
+  recall_a_after: number
+  recall_a_delta: number
+  recall_b_before: number
+  recall_b_after: number
+  recall_b_delta: number
+  matrix_frobenius_delta: number
+}
+
+export interface CollisionCounterfactualResult {
+  status: string
+  counterfactual_title: string
+  protected_synapses_count: number
+  original_recall_a: number
+  counterfactual_recall_a: number
+  recall_a_improvement: number
+  original_recall_b: number
+  counterfactual_recall_b: number
+  recall_b_delta: number
+  matrix_distance_frobenius: number
+  scientific_conclusion: string
+}
+
+// ============================================================================
+// Phase 18: Memory Detective & Research Lab Forensics
+// ============================================================================
+
+export interface ForensicsEvidenceItem {
+  evidence_id: string
+  title: string
+  category: 'SYNAPTIC_WEIGHT' | 'RECALL_MEASUREMENT' | 'COLLISION_OVERLAP' | 'SURGERY_EFFECT' | 'COUNTERFACTUAL_PROOF'
+  timestep: number
+  description: string
+  data_point: Record<string, unknown>
+  is_critical: boolean
+  discovered?: boolean
+}
+
+export interface ForensicsCandidateHypothesis {
+  hypothesis_id: string
+  label: string
+  description: string
+  recommended_tool: 'xray' | 'timemachine' | 'surgery' | 'counterfactual' | 'collision' | 'synaptic'
+  is_correct?: boolean | null
+  explanation?: string | null
+}
+
+export interface ClaimTraceabilityItem {
+  claim: string
+  paper_citation: string
+  experiment_ref: string
+  observation: string
+}
+
+export interface InvestigationCase {
+  case_id: string
+  case_code: string
+  title: string
+  difficulty: 'INTRODUCTORY' | 'INTERMEDIATE' | 'ADVANCED'
+  briefing: string
+  question: string
+  target_memory: string
+  initial_recall: number
+  final_recall: number
+  total_timesteps: number
+  intervention_step?: number | null
+  available_tools: string[]
+  candidate_hypotheses: ForensicsCandidateHypothesis[]
+  available_evidence: ForensicsEvidenceItem[]
+  ground_truth_hypothesis_id?: string | null
+  ground_truth_explanation?: string | null
+  underlying_data?: Record<string, unknown>
+  claim_traceability: ClaimTraceabilityItem[]
+}
+
+export interface DetectiveScore {
+  score: number
+  rating: 'MASTER_DETECTIVE' | 'SOUND_INVESTIGATOR' | 'APPRENTICE' | 'NEEDS_WORK'
+  hypothesis_correct: boolean
+  confidence_accuracy: string
+  evidence_score: number
+  reasoning_score: number
+  economy_score: number
+  feedback: string
+  explanation_chain: string[]
+}
+
+export interface HypothesisTestResult {
+  hypothesis_id: string
+  hypothesis_label: string
+  recommended_tool: string
+  tool_invoked: string
+  status: string
+  measured_evidence: Record<string, unknown>
+  consistency_verdict: 'CONSISTENT' | 'CONTRADICTED' | 'INCONCLUSIVE'
+  scientific_readout: string
+}
+
+export interface CustomExperimentConfig {
+  experiment_id: string
+  name: string
+  description: string
+  seed: number
+  dimension: number
+  decay: number
+  mechanism: string
+  write_gain: number
+  memories: Array<{ concept: string; value: string; importance: number; strength: number }>
+  idle_steps: number
+  ablate_synapse?: string | null
+  protect_shared_synapses: boolean
+}
+
+export interface CustomExperimentResult {
+  experiment_id: string
+  config: CustomExperimentConfig
+  created_at: string
+  final_matrix_norm: number
+  active_synapse_count: number
+  sparsity: number
+  recalls: Array<{
+    concept: string
+    predicted_value: string
+    ground_truth: string
+    fidelity: number
+    is_correct: boolean
+    crosstalk_noise: number
+  }>
+  timeline_length: number
+  reproducible_hash: string
+  notes: string
+}
+
+export interface ExperimentComparison {
+  exp_a_id: string
+  exp_b_id: string
+  matrix_frobenius_difference: number
+  norm_a: number
+  norm_b: number
+  active_synapses_a: number
+  active_synapses_b: number
+  recall_diffs: Array<{
+    concept: string
+    fidelity_a: number
+    fidelity_b: number
+    delta: number
+  }>
+  interpretation: string
+}
+
+export interface ScientificSource {
+  id: string
+  title: string
+  authors: string
+  journal: string
+  year: number
+  doi: string
+  key_finding: string
+  relevance: string
+}
+
+export interface LearningObjective {
+  id: string
+  title: string
+  principle: string
+  scientific_rule: string
+}
+
+export interface ForensicsSourcesResponse {
+  sources: ScientificSource[]
+  claims: ClaimTraceabilityItem[]
+}
+
+// ==========================================
+// Phase 19 Adaptive Memory Observatory Types
+// ==========================================
+
+export type WeatherCategory =
+  | 'UNCHANGED'
+  | 'RECENTLY_STRENGTHENED'
+  | 'RECENTLY_WEAKENED'
+  | 'CURRENTLY_ACTIVE'
+  | 'INACTIVE_ZERO'
+
+export type AdaptationEventType =
+  | 'MEMORY_WRITE'
+  | 'STATE_SHIFT'
+  | 'INTERFERENCE'
+  | 'RECALL_RECOVERY'
+  | 'SYNAPTIC_MODIFICATION'
+  | 'PASSIVE_DECAY'
+  | 'BASELINE'
+
+export interface StreamEvent {
+  event_id: string
+  step: number
+  event_type: string
+  key_label: string
+  environment_id: string
+  decay_rate: number
+  learning_rate: number
+  timestamp?: number
+  metadata?: Record<string, unknown>
+}
+
+export interface ObservatoryProbe {
+  concept: string
+  target_pattern: number[]
+  cue_pattern: number[]
+  retrieved_pattern: number[]
+  fidelity: number
+  crosstalk: number
+  is_stable: boolean
+}
+
+export interface SynapticWeatherPoint {
+  row: number
+  col: number
+  weight: number
+  prev_weight: number
+  delta: number
+  transmission_energy: number
+  category: WeatherCategory
+}
+
+export interface ObservatorySnapshot {
+  step: number
+  event_id: string
+  environment_id: string
+  adaptation_event: AdaptationEventType
+  adaptation_description: string
+  matrix_norm: number
+  sparsity: number
+  active_synapse_count: number
+  mean_weight: number
+  max_weight: number
+  probes: ObservatoryProbe[]
+  weights_preview: number[][]
+  active_transmissions: Array<[number, number]>
+  weather_map: SynapticWeatherPoint[]
+}
+
+export interface ChangeDetection {
+  step_from: number
+  step_to: number
+  strengthened_count: number
+  weakened_count: number
+  unchanged_count: number
+  max_delta: number
+  mean_delta: number
+  frobenius_delta: number
+  probe_fidelity_deltas: Record<string, number>
+  top_modified_synapses: Array<{
+    row: number
+    col: number
+    from_weight: number
+    to_weight: number
+    delta: number
+  }>
+  summary: string
+}
+
+export interface StabilityPlasticityMetrics {
+  total_synapses: number
+  unchanged_synapses: number
+  adapted_synapses: number
+  stability_ratio: number
+  plasticity_extent: number
+  average_weight_shift: number
+  high_plasticity_count: number
+  consolidated_count: number
+}
+
+export interface EnvironmentShiftReport {
+  env_a: string
+  env_b: string
+  drift_distance: number
+  interference_detected: boolean
+  retroactive_retention: number
+  summary: string
+}
+
+export interface LearnerPrediction {
+  prediction_id: string
+  session_id: string
+  target_env: string
+  predicted_category: string
+  hypothesis: string
+  confidence: number
+  actual_category?: string
+  is_correct?: boolean
+  validation_summary?: string
+}
+
+export interface ObservatorySession {
+  session_id: string
+  name: string
+  description: string
+  dimension: number
+  default_learning_rate: number
+  default_decay_rate: number
+  is_continuous: boolean
+  snapshots: ObservatorySnapshot[]
+  events: StreamEvent[]
+  predictions: LearnerPrediction[]
+  created_at: string
+  parent_session_id?: string
+  branch_point_step?: number
+  branch_type?: 'SURGERY' | 'COUNTERFACTUAL' | 'NONE'
+}
+
+export interface ObservatoryComparison {
+  session_a_id: string
+  session_b_id: string
+  session_a_name: string
+  session_b_name: string
+  steps_compared: number
+  frobenius_divergence_series: number[]
+  final_frobenius_distance: number
+  probe_divergence: Record<string, {
+    fidelity_a: number
+    fidelity_b: number
+    divergence: number
+  }>
+  stability_difference: number
+  plasticity_difference: number
+  narrative_conclusion: string
+}
+
+export interface ObservatoryPreset {
+  id: string
+  name: string
+  description: string
+  scenario: string
+  events_count: number
+}
+
+// ==========================================
+// Phase 20 Memory Genome & Synaptic Fingerprint Types
+// ==========================================
+
+export interface SynapticFingerprint {
+  memory_id: string
+  concept: string
+  value: string
+  timestep: number
+  dimension: number
+  active_key_units: number[]
+  active_value_units: number[]
+  active_unit_count: number
+  modified_synapses: Array<[number, number, number]> // [row, col, delta_weight]
+  modified_synapse_count: number
+  synaptic_strength_stats: {
+    mean: number
+    std: number
+    min: number
+    max: number
+    l2_norm: number
+    frobenius_contribution: number
+  }
+  activation_distribution: {
+    mean: number
+    variance: number
+    sparsity: number
+    max_val: number
+  }
+  sparsity: number
+  recall_performance: {
+    fidelity: number
+    crosstalk_noise: number
+    confidence: number
+  }
+  representation_vector: number[]
+  derivation_metadata: Record<string, unknown>
+}
+
+export interface FingerprintComparison {
+  memory_a_id: string
+  memory_b_id: string
+  concept_a: string
+  concept_b: string
+  surface_similarity: number
+  internal_similarity: number
+  synaptic_overlap_jaccard: number
+  shared_synapses: Array<[number, number, number, number]> // [row, col, delta_a, delta_b]
+  a_only_synapses: Array<[number, number, number]>
+  b_only_synapses: Array<[number, number, number]>
+  recall_divergence: number
+  similarity_discrepancy: number
+  explanation: string
+}
+
+export interface FingerprintEvolution {
+  memory_id: string
+  concept: string
+  timesteps: number[]
+  fingerprints: SynapticFingerprint[]
+  active_unit_trajectory: number[]
+  modified_synapse_trajectory: number[]
+  fidelity_trajectory: number[]
+  frobenius_contribution_trajectory: number[]
+}
+
+export interface MemoryDistancePoint {
+  memory_id: string
+  concept: string
+  value: string
+  x: number
+  y: number
+  active_units: number
+  recall_fidelity: number
+  is_outlier: boolean
+  outlier_reasons: string[]
+}
+
+export interface MemoryDistanceMap {
+  points: MemoryDistancePoint[]
+  projection_method: string
+  variance_explained: number | null
+  description: string
+}
+
+export interface MemoryBranchNode {
+  node_id: string
+  label: string
+  branch_type: 'ORIGINAL' | 'COLLISION' | 'SURGERY' | 'COUNTERFACTUAL'
+  step: number
+  parent_id: string | null
+  fingerprint: SynapticFingerprint | null
+  children: MemoryBranchNode[]
+}
+
+export interface OutlierReport {
+  memory_id: string
+  concept: string
+  is_outlier: boolean
+  z_scores: Record<string, number>
+  reasons: string[]
+}
+
+export interface FingerprintChallenge {
+  challenge_id: string
+  challenge_type: 'MOST_SIMILAR_INTERNAL' | 'MOST_CHANGED_INTERFERENCE'
+  prompt: string
+  target_memory: string
+  options: string[]
+  correct_option: string
+  explanation: string
+}
+
+// ---------------------------------------------------------------------------
+// Phase 21: Memory Ecosystem / Unified Synaptic Memory World Types
+// ---------------------------------------------------------------------------
+
+export interface MemoryPassport {
+  memory_id: string
+  concept: string
+  value: string
+  current_state: string
+  creation_timestep: number
+  last_accessed_timestep: number
+  access_count: number
+  recall_fidelity: number
+  active_units: number
+  synaptic_modifications: number
+  overlap_count: number
+  fingerprint_norm: number
+  experiment_count: number
+  branch_count: number
+  parent_memory_id: string | null
+  is_following: boolean
+}
+
+export interface LifecycleStage {
+  stage_id: 'ENCODE' | 'WRITE' | 'STABILIZE' | 'RECALL' | 'INTERFERE' | 'ADAPT' | 'INSPECT' | 'COUNTERFACTUAL'
+  name: string
+  description: string
+  target_workspace: string
+  status: 'PENDING' | 'COMPLETED' | 'CURRENT' | 'DEGRADED' | 'SKIPPED'
+  metrics: Record<string, unknown>
+  timestamp?: string | null
+}
+
+export interface MemoryLifecycle {
+  memory_id: string
+  concept: string
+  current_stage_id: string
+  stages: LifecycleStage[]
+}
+
+export interface UnifiedTimelineEvent {
+  event_id: string
+  event_type: 'MEMORY_CREATED' | 'SYNAPTIC_WRITE' | 'RECALL' | 'INTERFERENCE' | 'SURGERY' | 'COUNTERFACTUAL' | 'FINGERPRINT_CAPTURED' | 'INSPECTION'
+  step_index: number
+  session_time: string
+  memory_id: string
+  experiment_id: string
+  title: string
+  description: string
+  producing_experiment: string
+  metrics_before: Record<string, unknown>
+  metrics_after: Record<string, unknown>
+  delta_metrics: Record<string, unknown>
+}
+
+export interface MemoryBranch {
+  branch_id: string
+  parent_id: string | null
+  branch_type: 'ORIGINAL' | 'COLLISION' | 'SURGERY' | 'COUNTERFACTUAL'
+  memory_id: string
+  label: string
+  created_at: string
+  fidelity: number
+  synaptic_drift: number
+  children: MemoryBranch[]
+}
+
+export interface MemoryCheckpoint {
+  checkpoint_id: string
+  memory_id: string
+  label: string
+  step_index: number
+  weights_summary: Record<string, number>
+  created_at: string
+}
+
+export interface SynapticChangeLedger {
+  transition_name: string
+  memory_id: string
+  concept: string
+  before: Record<string, unknown>
+  after: Record<string, unknown>
+  delta: Record<string, unknown>
+  scientific_claims: { type: 'OBSERVED' | 'MEASURED' | 'INFERRED' | 'TEACHING_SIMPLIFICATION'; statement: string }[]
+}
+
+export interface MemoryRelationship {
+  source_id: string
+  source_concept: string
+  target_id: string
+  target_concept: string
+  relationship_type: 'SHARED_STATE' | 'SYNAPTIC_OVERLAP' | 'DERIVED_FROM' | 'INTERFERENCE' | 'COUNTERFACTUAL_OF'
+  weight: number
+  evidence: Record<string, unknown>
+}
+
+export interface LearnerHypothesis {
+  hypothesis_id: string
+  memory_id: string
+  experiment_type: string
+  prediction_text: string
+  predicted_outcome: string
+  observed_outcome?: string | null
+  is_match?: boolean | null
+  difference_explanation?: string | null
+  timestamp?: string
+}
+
+export interface EcosystemOverview {
+  active_memory_id: string
+  is_following: boolean
+  active_passport: MemoryPassport
+  passports: MemoryPassport[]
+  total_memories: number
+  total_events: number
+  scientific_claim: string
+}
+
+// ---------------------------------------------------------------------------
+// Phase 22: Experiment Studio Types
+// ---------------------------------------------------------------------------
+
+export type StudioExperimentType =
+  | 'ENCODING'
+  | 'INTERFERENCE'
+  | 'SURGERY'
+  | 'COUNTERFACTUAL'
+  | 'PERSISTENCE'
+  | 'COMPARISON'
+
+export interface StudioExperimentConfig {
+  experiment_id?: string
+  name: string
+  experiment_type: StudioExperimentType
+  seed: number
+  d: number
+  decay: number
+  update_strength: number
+  mechanism: string
+
+  concept_a: string
+  value_a: string
+  importance_a: number
+  strength_a: number
+
+  interfering_concept: string
+  interfering_value: string
+  interfering_strength: number
+  intervening_steps: number
+
+  surgery_target_row: number
+  surgery_target_col: number
+  surgery_action: 'zero' | 'clamp_high' | 'invert' | 'attenuate'
+
+  cf_param_name: string
+  cf_param_value: number
+
+  decay_cycles: number
+
+  comparison_concept: string
+  comparison_value: string
+
+  controlled_variables: string[]
+  changed_variable?: string | null
+}
+
+export interface StudioHypothesis {
+  hypothesis_text: string
+  predicted_outcome: string
+  predicted_challenge_choice?: string | null
+  actual_outcome?: string | null
+  support_status?: 'SUPPORTED' | 'NOT SUPPORTED' | 'MIXED / INCONCLUSIVE' | null
+}
+
+export interface StudioComputationStep {
+  step_name: 'INPUT' | 'ACTIVITY' | 'SYNAPTIC_WRITE' | 'STATE_UPDATE' | 'RECALL' | 'MEASUREMENT'
+  order_index: number
+  detail: string
+  metrics: Record<string, unknown>
+}
+
+export interface StudioSynapticDeltaRecord {
+  row: number
+  col: number
+  weight_before: number
+  weight_after: number
+  delta: number
+  pct_change: number
+  tag: 'OBSERVED' | 'MEASURED' | 'DERIVED' | 'SIMPLIFIED'
+}
+
+export interface StudioExperimentResult {
+  experiment_id: string
+  config: StudioExperimentConfig
+  hypothesis: StudioHypothesis
+  baseline_metrics: {
+    fidelity: number
+    crosstalk: number
+    matrix_norm: number
+    active_synapses: number
+    sparsity: number
+  }
+  experiment_metrics: {
+    fidelity: number
+    crosstalk: number
+    matrix_norm: number
+    active_synapses: number
+    sparsity: number
+  }
+  delta_metrics: {
+    fidelity_delta: number
+    crosstalk_delta: number
+    matrix_norm_delta: number
+    active_synapses_delta: number
+    sparsity_delta: number
+  }
+  pipeline_steps: StudioComputationStep[]
+  top_synaptic_changes: StudioSynapticDeltaRecord[]
+  observation_statements: string[]
+  interpretation_statements: string[]
+  experiment_graph_active_stage: string
+  is_deterministic: boolean
+  seed_used: number
+  timestamp: string
+}
+
+export interface StudioABComparison {
+  exp_a: StudioExperimentResult
+  exp_b: StudioExperimentResult
+  diff_summary: {
+    fidelity_diff: number
+    crosstalk_diff: number
+    matrix_norm_diff: number
+    active_synapses_diff: number
+  }
+  differing_parameters: Record<string, [unknown, unknown]>
+}
+
+export interface StudioSweepPoint {
+  param_value: number
+  fidelity: number
+  crosstalk: number
+  matrix_norm: number
+  active_synapses: number
+}
+
+export interface StudioSweepResult {
+  param_name: string
+  param_range: number[]
+  points: StudioSweepPoint[]
+  correlation: number
+  trend_interpretation: string
+}
+
+export interface StudioExperimentTemplate {
+  id: string
+  title: string
+  type: StudioExperimentType
+  description: string
+  config: Partial<StudioExperimentConfig>
+  recommended_question: string
+}
+
+export interface StudioHistoryItem {
+  experiment_id: string
+  name: string
+  experiment_type: string
+  concept_a: string
+  value_a: string
+  fidelity: number
+  delta_fidelity: number
+  hypothesis_status?: string | null
+  timestamp: string
+}
+
+export interface StudioGuidedJourneyStep {
+  step_index: number
+  action: string
+  instruction: string
+  focus: string
+}
+
+export interface StudioGuidedJourney {
+  title: string
+  total_steps: number
+  steps: StudioGuidedJourneyStep[]
+}
+
+export interface StudioExperimentNote {
+  question: string
+  hypothesis: string
+  observation: string
+  conclusion: string
+}
+
+// ==========================================
+// Phase 23 Scientific Evidence & Research Layer
+// ==========================================
+
+export interface PrimaryResearchPaper {
+  paper_id: string
+  title: string
+  authors: string[]
+  year: number
+  journal: string
+  doi: string
+  url: string
+  open_access: boolean
+  tags: string[]
+  key_finding: string
+  supported_claim: string
+  pathway_connection: string
+  model_limitations: string
+}
+
+export interface ClaimTrace {
+  claim_id: string
+  claim_text: string
+  source_paper_ids: string[]
+  pathway_experiment_type: string
+  measured_metrics: string[]
+  observed_finding: string
+  scientific_interpretation: string
+  what_this_does_not_prove: string
+}
+
+export interface MetricDefinition {
+  metric_id: string
+  name: string
+  symbol: string
+  formula: string
+  unit: string
+  definition: string
+  interpretation: string
+  limitation: string
+}
+
+export interface ResearchGraphNode {
+  id: string
+  label: string
+  node_type: 'CONCEPT' | 'PAPER' | 'IMPLEMENTATION' | 'EXPERIMENT' | 'OBSERVATION'
+  summary: string
+  details?: Record<string, unknown>
+}
+
+export interface ResearchGraphEdge {
+  source: string
+  target: string
+  relation: string
+}
+
+export interface ResearchGraphData {
+  nodes: ResearchGraphNode[]
+  edges: ResearchGraphEdge[]
+  total_nodes: number
+  total_edges: number
+}
+
+export interface SourceLicenseRecord {
+  category: 'CODE' | 'LIBRARIES' | 'DATA' | 'FONTS_ICONS' | 'PAPERS'
+  name: string
+  source: string
+  version: string
+  license: string
+  usage: string
+}
+
+export interface DisclosuresData {
+  ai_assistance: {
+    tools_used: string[]
+    role: string
+    human_verification: string
+    reproducibility: string
+  }
+  data_disclosure: {
+    data_nature: string
+    generation_method: string
+    reproducibility: string
+    patient_or_pii_data: boolean
+  }
+  prerequisites: {
+    target_audience: string[]
+    required_knowledge: string[]
+    optional_helpful_background: string[]
+    non_prerequisites: string[]
+  }
+  learning_objectives: string[]
+  limitations: string[]
+}
+
+export interface MethodologyData {
+  experiment_type: string
+  input_specification: string
+  model_architecture: string
+  mathematical_operation: string
+  readout_probe: string
+  evaluation_metrics: string[]
+  reproducibility: {
+    engine: string
+    seed: number
+    deterministic: boolean
+    software_stack: string
+    hardware_invariance: string
+  }
+  limitations_and_non_claims: string[]
 }

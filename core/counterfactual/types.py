@@ -24,6 +24,13 @@ class InterventionType(str, Enum):
     TEMPORAL_FREEZE = "temporal_freeze"
     TEMPORAL_SCALE = "temporal_scale"
 
+    # Phase 16 Counterfactual Synaptic & Mechanism interventions
+    SYNAPSE_PREVENT_STRENGTHEN = "synapse_prevent_strengthen"
+    SYNAPSE_SILENCE = "synapse_silence"
+    SYNAPSE_SCALE = "synapse_scale"
+    CHANGE_DECAY = "change_decay"
+    CHANGE_PLASTICITY = "change_plasticity"
+
 
 class DivergenceClassification(str, Enum):
     """Empirical characterization of the divergence propagation shape."""
@@ -66,6 +73,7 @@ class BranchType(str, Enum):
     SURGERY = "surgery"
     TEMPORAL = "temporal"
     EXPLORATORY = "exploratory"
+    SYNAPTIC = "synaptic"
 
 
 # Safety quotas

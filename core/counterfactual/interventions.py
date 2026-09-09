@@ -168,6 +168,25 @@ def validate_intervention(intervention: Intervention, history_length: int) -> No
                 f"Temporal interval [{t_start}, {t_end}] out of bounds for history length {history_length}"
             )
 
+    elif itype in {InterventionType.SYNAPSE_PREVENT_STRENGTHEN, InterventionType.SYNAPSE_SILENCE, InterventionType.SYNAPSE_SCALE}:
+        syn_id = p.get("synapse_id")
+        if not syn_id and "source_idx" not in p:
+            raise CounterfactualValidationError(f"{itype.value} requires 'synapse_id' or 'source_idx'/'target_idx' parameter")
+        if itype == InterventionType.SYNAPSE_SCALE:
+            factor = p.get("factor")
+            if factor is None or not (0.0 <= float(factor) <= 10.0):
+                raise CounterfactualValidationError("SYNAPSE_SCALE requires 'factor' in [0.0, 10.0]")
+
+    elif itype == InterventionType.CHANGE_DECAY:
+        decay = p.get("new_decay")
+        if decay is None or not (0.0 <= float(decay) <= 1.0):
+            raise CounterfactualValidationError("CHANGE_DECAY requires 'new_decay' in [0.0, 1.0]")
+
+    elif itype == InterventionType.CHANGE_PLASTICITY:
+        strength = p.get("new_update_strength")
+        if strength is None or not (0.0 <= float(strength) <= 10.0):
+            raise CounterfactualValidationError("CHANGE_PLASTICITY requires 'new_update_strength' in [0.0, 10.0]")
+
 
 # ---------------------------------------------------------------------------
 # Intervention Factory Helpers
@@ -348,3 +367,96 @@ def create_temporal_surgery_intervention(
         },
         description=description or f"Temporal surgery ({operation}) on [{start_timestep}, {end_timestep}]",
     )
+
+
+def create_synapse_prevent_strengthen_intervention(
+    synapse_id: str,
+    target_timestep: Optional[int] = None,
+    source_idx: Optional[int] = None,
+    target_idx: Optional[int] = None,
+    description: str = "",
+) -> Intervention:
+    """Intervention preventing a synapse from strengthening (clamped to baseline at t_div)."""
+    p: Dict[str, Any] = {"synapse_id": synapse_id}
+    if source_idx is not None:
+        p["source_idx"] = source_idx
+    if target_idx is not None:
+        p["target_idx"] = target_idx
+    return Intervention(
+        intervention_type=InterventionType.SYNAPSE_PREVENT_STRENGTHEN,
+        target_timestep=target_timestep,
+        parameters=p,
+        description=description or f"Prevent synaptic strengthening on {synapse_id} at t>={target_timestep}",
+    )
+
+
+def create_synapse_silence_intervention(
+    synapse_id: str,
+    target_timestep: Optional[int] = None,
+    source_idx: Optional[int] = None,
+    target_idx: Optional[int] = None,
+    description: str = "",
+) -> Intervention:
+    """Intervention silencing a synapse (zeroing weight at t_div and subsequent steps)."""
+    p: Dict[str, Any] = {"synapse_id": synapse_id}
+    if source_idx is not None:
+        p["source_idx"] = source_idx
+    if target_idx is not None:
+        p["target_idx"] = target_idx
+    return Intervention(
+        intervention_type=InterventionType.SYNAPSE_SILENCE,
+        target_timestep=target_timestep,
+        parameters=p,
+        description=description or f"Silence connection {synapse_id} at t>={target_timestep}",
+    )
+
+
+def create_synapse_scale_intervention(
+    synapse_id: str,
+    factor: float = 0.5,
+    target_timestep: Optional[int] = None,
+    source_idx: Optional[int] = None,
+    target_idx: Optional[int] = None,
+    description: str = "",
+) -> Intervention:
+    """Intervention scaling a synapse weight by a factor at t_div."""
+    p: Dict[str, Any] = {"synapse_id": synapse_id, "factor": float(factor)}
+    if source_idx is not None:
+        p["source_idx"] = source_idx
+    if target_idx is not None:
+        p["target_idx"] = target_idx
+    return Intervention(
+        intervention_type=InterventionType.SYNAPSE_SCALE,
+        target_timestep=target_timestep,
+        parameters=p,
+        description=description or f"Scale synaptic weight on {synapse_id} by {factor}x at t>={target_timestep}",
+    )
+
+
+def create_change_decay_intervention(
+    new_decay: float,
+    target_timestep: Optional[int] = None,
+    description: str = "",
+) -> Intervention:
+    """Intervention altering the global decay/forgetting rate lambda."""
+    return Intervention(
+        intervention_type=InterventionType.CHANGE_DECAY,
+        target_timestep=target_timestep,
+        parameters={"new_decay": float(new_decay)},
+        description=description or f"Alter synaptic decay rate to {new_decay} at t>={target_timestep}",
+    )
+
+
+def create_change_plasticity_intervention(
+    new_update_strength: float,
+    target_timestep: Optional[int] = None,
+    description: str = "",
+) -> Intervention:
+    """Intervention altering the plasticity learning rate / write gain eta."""
+    return Intervention(
+        intervention_type=InterventionType.CHANGE_PLASTICITY,
+        target_timestep=target_timestep,
+        parameters={"new_update_strength": float(new_update_strength)},
+        description=description or f"Alter plasticity write gain to {new_update_strength} at t>={target_timestep}",
+    )
+
