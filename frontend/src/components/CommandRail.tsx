@@ -44,56 +44,42 @@ const NAV_GROUPS: NavCategory[] = [
     ],
   },
   {
-    category: 'EXPLORE',
+    category: 'OBSERVATORY',
     items: [
-      { id: 'ecosystem',    label: 'Ecosystem Hub',  icon: '🌐', shortcut: 'E' },
-      { id: 'observatory',  label: 'Observe',        icon: '○', shortcut: '1' },
-      { id: 'map',          label: 'Memory Map',     icon: '⊕', shortcut: 'M' },
+      { id: 'ecosystem',    label: 'Living Ecosystem', icon: '🌐', shortcut: 'E' },
+      { id: 'observatory',  label: 'Memory Field',     icon: '◉', shortcut: '1' },
+      { id: 'map',          label: 'Topology Map',     icon: '⊕', shortcut: 'M' },
     ],
   },
   {
-    category: 'EXPERIMENT',
+    category: 'SUBSTRATE',
+    items: [
+      { id: 'synaptic',     label: 'Synaptic Brain',   icon: '☊', shortcut: 'S' },
+      { id: 'surgery',      label: 'Surgery & X-Ray',  icon: '⚕', shortcut: 'W' },
+      { id: 'xray',         label: 'Forensic X-Ray',   icon: '⌬', shortcut: 'X' },
+      { id: 'detective',    label: 'Investigation',    icon: '◎', shortcut: 'D' },
+    ],
+  },
+  {
+    category: 'INTERVENTION',
+    items: [
+      { id: 'counterfactual', label: 'Counterfactuals', icon: '⋈', shortcut: 'C' },
+      { id: 'causal',       label: 'Causal Inference',  icon: '⊸', shortcut: 'L' },
+      { id: 'collision',    label: 'Collision Lab',     icon: '⚡', shortcut: 'K' },
+    ],
+  },
+  {
+    category: 'RESEARCH',
     items: [
       { id: 'studio',       label: 'Experiment Studio', icon: '🔬', shortcut: 'P' },
-      { id: 'collision',    label: 'Collision Lab',     icon: '⚡', shortcut: 'K' },
-      { id: 'lab',          label: 'Memory Lab',        icon: '◈', shortcut: '2' },
-      { id: 'experiments',  label: 'Archive',           icon: '⊞', shortcut: '7' },
-    ],
-  },
-  {
-    category: 'INSPECT',
-    items: [
-      { id: 'synaptic',     label: 'Synaptic Brain', icon: '☊', shortcut: 'S' },
-      { id: 'surgery',      label: 'Surgery & X-Ray', icon: '⚕', shortcut: 'W' },
-      { id: 'xray',         label: 'X-Ray',          icon: '⌬', shortcut: 'X' },
-      { id: 'detective',    label: 'Detective',      icon: '◎', shortcut: 'D' },
-    ],
-  },
-  {
-    category: 'INTERVENE',
-    items: [
-      { id: 'counterfactual', label: 'Counterfactual', icon: '⋈', shortcut: 'C' },
-      { id: 'causal',       label: 'Causal Lab',     icon: '⊸', shortcut: 'L' },
-    ],
-  },
-  {
-    category: 'COMPARE',
-    items: [
-      { id: 'evidence',     label: 'Scientific Evidence', icon: '📜', shortcut: 'V' },
-      { id: 'genome',       label: 'Genome',         icon: '⌇', shortcut: 'G' },
-      { id: 'research',     label: 'Research Lab',   icon: '🧪', shortcut: 'R' },
-      { id: 'reports',      label: 'Reports',        icon: '⊟', shortcut: '8' },
-    ],
-  },
-  {
-    category: 'HISTORY',
-    items: [
-      { id: 'timeline',     label: 'Timeline',       icon: '⌘', shortcut: '4' },
-      { id: 'agency',       label: 'Agency',         icon: '⟁', shortcut: 'A' },
+      { id: 'evidence',     label: 'Evidence & Proofs', icon: '📜', shortcut: 'V' },
+      { id: 'genome',       label: 'Memory Genome',     icon: '🧬', shortcut: 'G' },
+      { id: 'timeline',     label: 'Lifecycle Timeline', icon: '⌘', shortcut: '4' },
+      { id: 'experiments',  label: 'Experiment Archive', icon: '⊞', shortcut: '7' },
+      { id: 'reports',      label: 'Research Reports',  icon: '⊟', shortcut: '8' },
     ],
   },
 ]
-
 
 export const CommandRail: React.FC<CommandRailProps> = ({
   activeWorkspace,
@@ -108,16 +94,16 @@ export const CommandRail: React.FC<CommandRailProps> = ({
   return (
     <aside
       className={`command-rail ${isExpanded ? 'expanded' : 'collapsed'}`}
-      aria-label="Workspaces Navigation"
+      aria-label="Scientific Workspaces Navigation"
     >
       <div className="rail-header">
-        {isExpanded && <span className="rail-header-title">Workspaces</span>}
+        {isExpanded && <span className="rail-header-title">INSTRUMENT MODES</span>}
         {onToggleExpand && (
           <button
             className="rail-toggle-btn"
             onClick={onToggleExpand}
-            title={isExpanded ? "Collapse sidebar ([)" : "Expand sidebar ([)"}
-            aria-label={isExpanded ? "Collapse sidebar" : "Expand sidebar"}
+            title={isExpanded ? "Collapse Rail ([)" : "Expand Rail ([)"}
+            aria-label={isExpanded ? "Collapse Rail" : "Expand Rail"}
           >
             {isExpanded ? '◀' : '▶'}
           </button>
@@ -145,6 +131,7 @@ export const CommandRail: React.FC<CommandRailProps> = ({
                   {item.shortcut && (
                     <span className="rail-shortcut">{item.shortcut}</span>
                   )}
+                  {isActive && <span className="rail-active-dot" />}
                 </button>
               )
             })}
@@ -160,7 +147,7 @@ export const CommandRail: React.FC<CommandRailProps> = ({
           </span>
         </div>
         <div className="rail-footer-row">
-          <span className="rail-icon" style={{ fontSize: 9 }}>◈</span>
+          <span className="rail-icon" style={{ fontSize: '9px', color: 'var(--accent)' }}>◈</span>
           <span className="rail-footer-val">d={engineDim}</span>
         </div>
       </div>

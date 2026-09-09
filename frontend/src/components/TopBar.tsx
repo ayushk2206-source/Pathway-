@@ -39,44 +39,51 @@ export const TopBar: React.FC<TopBarProps> = ({
       {/* ── Brand ── */}
       <div className="topbar-left">
         <div className="brand">
-          <span className="brand-wordmark">Neural Archaeology</span>
-          <span className="brand-tagline">scientific instrument</span>
+          <div className="brand-icon-box">
+            <span className="brand-glyph">◈</span>
+          </div>
+          <div className="brand-text-block">
+            <span className="brand-wordmark">NEURAL ARCHAEOLOGY</span>
+            <span className="brand-tagline">RESEARCH INSTRUMENT</span>
+          </div>
         </div>
 
-        <div className="topbar-status">
+        <div className="topbar-status-pill">
           <span className={`status-led ${isBusy ? 'busy' : 'live'}`} />
-          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em' }}>
-            {isBusy ? 'COMPUTING' : 'READY'}
-          </span>
+          <span className="status-text">{isBusy ? 'COMPUTING' : 'SUBSTRATE READY'}</span>
         </div>
       </div>
 
       {/* ── Research Context (center) ── */}
       <div className="topbar-center">
         {currentExperiment ? (
-          <div className="topbar-context" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="mono-badge cyan">
-              EXP: {currentExperiment.experiment_id.slice(0, 8)}
+          <div className="topbar-context-strip">
+            <span className="context-pill exp-pill">
+              <span className="pill-k">EXP</span>
+              <span className="pill-v">{currentExperiment.experiment_id.slice(0, 8)}</span>
             </span>
             {mechanism && (
-              <span className="mono-badge violet">
-                {mechanism}
+              <span className="context-pill mech-pill">
+                <span className="pill-k">MECH</span>
+                <span className="pill-v">{mechanism}</span>
               </span>
             )}
             {dim && (
-              <span className="mono-badge">
-                {dim}D
+              <span className="context-pill dim-pill">
+                <span className="pill-k">DIM</span>
+                <span className="pill-v">{dim}D</span>
               </span>
             )}
             {numEvents > 0 && (
-              <span className="mono-badge">
-                {numEvents} EVT
+              <span className="context-pill evt-pill">
+                <span className="pill-k">EVT</span>
+                <span className="pill-v">{numEvents}</span>
               </span>
             )}
           </div>
         ) : (
-          <span className="topbar-context" style={{ fontStyle: 'italic', opacity: 0.5 }}>
-            No experiment loaded
+          <span className="topbar-empty-context">
+            NO ACTIVE EXPERIMENT LOADED
           </span>
         )}
       </div>
@@ -86,12 +93,8 @@ export const TopBar: React.FC<TopBarProps> = ({
         {/* Global Memory Selector & Follow Badge */}
         {selectedMemoryId && (
           <div className="topbar-memory-pill">
-            <span style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
-              INSPECT:
-            </span>
-            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: '11px' }}>
-              {selectedMemoryId}
-            </span>
+            <span className="memory-pill-label">INSPECT</span>
+            <span className="memory-pill-val">{selectedMemoryId.slice(0, 14)}</span>
             {onToggleFollowMemory && (
               <button
                 className={`topbar-follow-toggle ${isFollowingMemory ? 'active' : ''}`}
@@ -99,15 +102,15 @@ export const TopBar: React.FC<TopBarProps> = ({
                 title="Toggle 'Follow This Memory' mode across all tools"
               >
                 <span>{isFollowingMemory ? '★' : '☆'}</span>
-                <span>{isFollowingMemory ? 'FOLLOW' : 'UNLOCKED'}</span>
+                <span>{isFollowingMemory ? 'FOLLOW' : 'LOCK'}</span>
               </button>
             )}
           </div>
         )}
 
-        {/* Experiment selector — compact */}
+        {/* Experiment selector dropdown */}
         {experiments.length > 0 && (
-          <div className="exp-selector">
+          <div className="exp-selector-box">
             <select
               className="exp-select"
               value={currentExperiment?.experiment_id || ''}
@@ -134,24 +137,20 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         )}
 
+        {/* Judge Mode Tour Trigger */}
         {onOpenJudgeMode && (
           <button
-            className="topbar-btn"
+            className="topbar-judge-pill-btn"
             onClick={onOpenJudgeMode}
             title="Launch 2-minute Judge Mode evaluation tour (J)"
-            style={{
-              background: 'rgba(245, 158, 11, 0.15)',
-              borderColor: 'rgba(245, 158, 11, 0.4)',
-              color: '#fbbf24',
-              fontWeight: 700,
-            }}
           >
             ★ JUDGE MODE
           </button>
         )}
 
+        {/* Action Controls */}
         <button
-          className="topbar-btn btn-primary"
+          className="topbar-pill-btn btn-primary"
           onClick={onLaunchDemo}
           disabled={isBusy}
           title="Launch canonical demo experiment"
@@ -160,7 +159,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
 
         <button
-          className="topbar-btn"
+          className="topbar-pill-btn btn-secondary"
           onClick={onReplay}
           disabled={isBusy || !currentExperiment}
           title="Re-execute state sequence"
@@ -169,7 +168,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
 
         <button
-          className="topbar-btn btn-ghost"
+          className="topbar-icon-pill"
           onClick={onOpenCommandPalette}
           title="Command palette (Ctrl/Cmd + K)"
           aria-label="Command palette"
@@ -178,7 +177,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
 
         <button
-          className="topbar-btn btn-ghost"
+          className="topbar-icon-pill"
           onClick={onOpenShortcuts}
           title="Keyboard shortcuts (?)"
           aria-label="Keyboard shortcuts"

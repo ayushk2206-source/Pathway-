@@ -29,7 +29,7 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
     setIsExiting(true)
     setTimeout(() => {
       onEnter()
-    }, 600)
+    }, 500)
   }
 
   const handleJudgeClick = () => {
@@ -37,7 +37,7 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
     setTimeout(() => {
       onEnter()
       if (onLaunchJudgeMode) onLaunchJudgeMode()
-    }, 600)
+    }, 500)
   }
 
   useEffect(() => {
@@ -60,23 +60,22 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
     window.addEventListener('resize', handleResize)
 
     // Generate network nodes
-    const nodeCount = Math.min(50, Math.floor((width * height) / 25000))
+    const nodeCount = Math.min(45, Math.floor((width * height) / 28000))
     const nodes: NodePoint[] = []
 
     for (let i = 0; i < nodeCount; i++) {
       nodes.push({
         x: Math.random() * width,
         y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        radius: 2 + Math.random() * 2.5,
-        activation: Math.random() * 0.5,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        radius: 1.8 + Math.random() * 2.2,
+        activation: Math.random() * 0.4,
       })
     }
 
-    // Synaptic pulses propagating along edges
     const pulses: PulseWave[] = []
-    const connectionDist = 180
+    const connectionDist = 175
 
     let mouseX = width / 2
     let mouseY = height / 2
@@ -92,7 +91,6 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
     const pulseInterval = setInterval(() => {
       if (nodes.length < 2) return
       const src = Math.floor(Math.random() * nodes.length)
-      // Find nearest neighbor
       let bestDst = -1
       let bestDist = Infinity
       for (let j = 0; j < nodes.length; j++) {
@@ -105,27 +103,28 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
           bestDst = j
         }
       }
-      if (bestDst !== -1) {
+      if (bestDst !== -1 && pulses.length < 10) {
         pulses.push({
           srcIdx: src,
           dstIdx: bestDst,
           progress: 0,
-          speed: 0.015 + Math.random() * 0.02,
+          speed: 0.012 + Math.random() * 0.015,
         })
       }
-    }, 200)
+    }, 280)
 
     const render = () => {
       ctx.clearRect(0, 0, width, height)
 
-      // Background ambient gradient
-      const bgGrad = ctx.createRadialGradient(mouseX, mouseY, 40, width / 2, height / 2, width * 0.7)
-      bgGrad.addColorStop(0, 'rgba(14, 165, 233, 0.07)')
-      bgGrad.addColorStop(1, 'rgba(3, 7, 18, 0)')
+      // Background atmospheric glow & organic contour
+      const bgGrad = ctx.createRadialGradient(mouseX, mouseY, 40, width / 2, height / 2, width * 0.75)
+      bgGrad.addColorStop(0, 'rgba(56, 189, 248, 0.06)')
+      bgGrad.addColorStop(0.5, 'rgba(180, 83, 60, 0.04)')
+      bgGrad.addColorStop(1, 'rgba(4, 6, 10, 0)')
       ctx.fillStyle = bgGrad
       ctx.fillRect(0, 0, width, height)
 
-      // Update and draw nodes
+      // Update and draw connections
       for (let i = 0; i < nodes.length; i++) {
         const n = nodes[i]
         n.x += n.vx
@@ -134,10 +133,8 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
         if (n.x < 0 || n.x > width) n.vx *= -1
         if (n.y < 0 || n.y > height) n.vy *= -1
 
-        // Decay activation toward base
-        n.activation = Math.max(0.1, n.activation - 0.005)
+        n.activation = Math.max(0.1, n.activation - 0.003)
 
-        // Draw connections to nearby nodes
         for (let j = i + 1; j < nodes.length; j++) {
           const n2 = nodes[j]
           const dx = n2.x - n.x
@@ -145,9 +142,9 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
           const dist = Math.sqrt(dx * dx + dy * dy)
 
           if (dist < connectionDist) {
-            const alpha = (1 - dist / connectionDist) * 0.22
+            const alpha = (1 - dist / connectionDist) * 0.18
             ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`
-            ctx.lineWidth = 1
+            ctx.lineWidth = 0.85
             ctx.beginPath()
             ctx.moveTo(n.x, n.y)
             ctx.lineTo(n2.x, n2.y)
@@ -162,21 +159,26 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
         pulse.progress += pulse.speed
 
         if (pulse.progress >= 1) {
-          nodes[pulse.dstIdx].activation = 0.9
+          if (nodes[pulse.dstIdx]) nodes[pulse.dstIdx].activation = 0.85
           pulses.splice(p, 1)
           continue
         }
 
         const src = nodes[pulse.srcIdx]
         const dst = nodes[pulse.dstIdx]
+        if (!src || !dst) {
+          pulses.splice(p, 1)
+          continue
+        }
+
         const px = src.x + (dst.x - src.x) * pulse.progress
         const py = src.y + (dst.y - src.y) * pulse.progress
 
         ctx.fillStyle = '#38bdf8'
         ctx.shadowColor = '#38bdf8'
-        ctx.shadowBlur = 8
+        ctx.shadowBlur = 6
         ctx.beginPath()
-        ctx.arc(px, py, 2.5, 0, Math.PI * 2)
+        ctx.arc(px, py, 2, 0, Math.PI * 2)
         ctx.fill()
         ctx.shadowBlur = 0
       }
@@ -184,15 +186,15 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
       // Draw node spheres
       for (let i = 0; i < nodes.length; i++) {
         const n = nodes[i]
-        const glow = n.activation > 0.4
+        const glow = n.activation > 0.35
 
-        ctx.fillStyle = glow ? '#38bdf8' : 'rgba(148, 163, 184, 0.4)'
+        ctx.fillStyle = glow ? '#38bdf8' : 'rgba(148, 163, 184, 0.35)'
         if (glow) {
-          ctx.shadowColor = 'rgba(56, 189, 248, 0.8)'
-          ctx.shadowBlur = 10
+          ctx.shadowColor = 'rgba(56, 189, 248, 0.7)'
+          ctx.shadowBlur = 8
         }
         ctx.beginPath()
-        ctx.arc(n.x, n.y, n.radius * (glow ? 1.4 : 1), 0, Math.PI * 2)
+        ctx.arc(n.x, n.y, n.radius * (glow ? 1.3 : 1), 0, Math.PI * 2)
         ctx.fill()
         ctx.shadowBlur = 0
       }
@@ -214,69 +216,97 @@ export const ImmersionEntryHero: React.FC<ImmersionEntryHeroProps> = ({ onEnter,
     <div className={`immersion-hero-overlay ${isExiting ? 'exiting' : ''}`}>
       <canvas ref={canvasRef} className="immersion-canvas-bg" />
 
+      {/* Floating Top Pill Nav Bar (Inspired by reference screenshot) */}
+      <nav className="hero-floating-nav">
+        <div className="nav-pill-logo">
+          <span className="logo-symbol">◈</span>
+          <span className="logo-text">NEURAL ARCHAEOLOGY</span>
+        </div>
+
+        <div className="nav-pill-links">
+          <button className="nav-link-btn active" onClick={handleEnterClick}>Observatory</button>
+          <button className="nav-link-btn" onClick={handleEnterClick}>Synaptic Brain</button>
+          <button className="nav-link-btn" onClick={handleEnterClick}>Surgery</button>
+          <button className="nav-link-btn" onClick={handleEnterClick}>Counterfactuals</button>
+          <button className="nav-link-btn" onClick={handleEnterClick}>Evidence</button>
+        </div>
+
+        <div className="nav-pill-action">
+          <button className="nav-action-btn" onClick={handleJudgeClick}>
+            ★ Judge Mode
+          </button>
+        </div>
+      </nav>
+
+      {/* Center Cinematic Content */}
       <div className="immersion-content">
-        <div className="immersion-badge-row">
-          <span className="immersion-sys-tag">DIGITAL NEUROSCIENCE LABORATORY</span>
-          <span
-            style={{
-              fontSize: '0.72rem',
-              color: '#34d399',
-              background: 'rgba(16, 185, 129, 0.15)',
-              padding: '0.25rem 0.6rem',
-              borderRadius: '9999px',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
-              fontWeight: 700,
-            }}
-          >
-            PEER-REVIEWED FOUNDATIONS
-          </span>
+        {/* Floating Category Pill Badge */}
+        <div className="hero-status-pill">
+          <span className="status-dot live" />
+          <span className="status-pill-text">PEER-REVIEWED SYNAPTIC PLASTICITY INSTRUMENT</span>
         </div>
 
-        <h1 className="immersion-title">PATHWAY</h1>
+        {/* Central Display Typography */}
+        <h1 className="hero-main-title">
+          <span className="title-line-1">NEURAL ARCHAEOLOGY</span>
+          <span className="title-line-2">Intelligence Designed To Evolve</span>
+        </h1>
 
-        <div className="immersion-subtitle">
-          SYNAPTIC PLASTICITY AS SHORT-TERM MEMORY
-        </div>
-
-        <p className="immersion-description">
-          Experience the hidden life of machine memory.
-          Watch incoming activity temporarily modify synaptic connections,
-          trace representational divergence, ablate critical weights, and
-          discover how information is remembered, interfered with, and forgotten.
+        {/* Subtitle description */}
+        <p className="hero-description">
+          Experience how temporary synaptic connection updates transform static network wiring
+          into living short-term memory — enabling fast learning, decay, interference, and recall without retraining.
         </p>
 
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+        {/* Action Button Strip */}
+        <div className="hero-cta-strip">
           <button
-            className="immersion-enter-btn"
+            className="hero-primary-pill-btn"
             onClick={handleEnterClick}
-            aria-label="Enter the memory system"
+            aria-label="Enter Research Observatory"
           >
-            <span>ENTER THE MEMORY SYSTEM</span>
-            <span style={{ fontSize: '1.15rem' }}>&rarr;</span>
+            <span>Enter Observatory</span>
+            <span className="btn-arrow">&rarr;</span>
           </button>
 
           {onLaunchJudgeMode && (
             <button
-              className="immersion-enter-btn"
+              className="hero-secondary-pill-btn"
               onClick={handleJudgeClick}
               aria-label="Launch Judge Mode 2-minute tour"
-              style={{
-                background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.3) 0%, rgba(217, 119, 6, 0.3) 100%)',
-                borderColor: '#f59e0b',
-                color: '#fbbf24',
-                boxShadow: '0 0 25px rgba(245, 158, 11, 0.4)',
-              }}
             >
-              <span>★ LAUNCH JUDGE MODE (2-MIN TOUR)</span>
-              <span style={{ fontSize: '1.15rem' }}>&rarr;</span>
+              <span>★ Launch Judge Tour (2-Min)</span>
             </button>
           )}
         </div>
-
-        <div className="immersion-footnote">
-          [TEACHING VISUALIZATION: SYNAPTIC ACTIVATION FIELD &bull; PURE LINEAR ALGEBRA SUBSTRATE]
-        </div>
       </div>
+
+      {/* Bottom 4-Column Scientific Metric Strip (Inspired by reference screenshot) */}
+      <footer className="hero-bottom-telemetry">
+        <div className="telemetry-card">
+          <div className="telemetry-icon">⋈</div>
+          <div className="telemetry-val">128-D</div>
+          <div className="telemetry-label">Vector Substrate</div>
+        </div>
+
+        <div className="telemetry-card">
+          <div className="telemetry-icon">⁒</div>
+          <div className="telemetry-val">0.05 / τ</div>
+          <div className="telemetry-label">Synaptic Decay Rate</div>
+        </div>
+
+        <div className="telemetry-card">
+          <div className="telemetry-icon">❊</div>
+          <div className="telemetry-val">Zero-Noise</div>
+          <div className="telemetry-label">Causal Interventions</div>
+        </div>
+
+        <div className="telemetry-card">
+          <div className="telemetry-icon">井</div>
+          <div className="telemetry-val">Real-Time</div>
+          <div className="telemetry-label">Hebbian Plasticity Engine</div>
+        </div>
+      </footer>
     </div>
   )
 }
