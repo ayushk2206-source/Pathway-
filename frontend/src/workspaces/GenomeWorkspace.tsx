@@ -194,7 +194,7 @@ export const GenomeWorkspace: React.FC<Props> = ({
       <div className="genome-selector-row">
         <div className="genome-selector-label">TARGET MEMORY:</div>
         <div className="genome-selector-chips">
-          {(experiment.events || []).slice(0, 12).map((ev) => (
+          {((experiment?.events) || []).slice(0, 12).map((ev) => (
             <button
               key={ev.id}
               className={`memory-chip ${memId === ev.id ? 'active' : ''}`}

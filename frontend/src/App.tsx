@@ -71,6 +71,8 @@ import { ImmersionEntryHero } from './components/ImmersionEntryHero'
 import { ImmersiveNavDock } from './components/ImmersiveNavDock'
 import { CustomPointer } from './components/CustomPointer'
 import { JudgeModeExperience } from './components/JudgeModeExperience'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { ProceduralBackground } from './components/ProceduralBackground'
 import './App.css'
 import './forensics.css'
 import './immersive.css'
@@ -380,6 +382,7 @@ export default function App() {
 
   return (
     <div className="app-shell" style={{ position: 'relative' }}>
+      <ProceduralBackground />
       <CustomPointer mode="default" />
 
       {isImmersionPortalOpen && (
@@ -420,206 +423,208 @@ export default function App() {
         />
 
         <main className="main-canvas">
-          {activeWorkspace === 'ecosystem' && (
-            <MemoryEcosystemWorkspace
-              onNavigateToWorkspace={(ws) => setActiveWorkspace(ws as WorkspaceId)}
-              onSelectGlobalMemory={(id) => setSelectedMemoryId(id)}
-            />
-          )}
+          <ErrorBoundary fallbackTitle={`${activeWorkspace.toUpperCase()} SUBSYSTEM TELEMETRY`}>
+            {activeWorkspace === 'ecosystem' && (
+              <MemoryEcosystemWorkspace
+                onNavigateToWorkspace={(ws) => setActiveWorkspace(ws as WorkspaceId)}
+                onSelectGlobalMemory={(id) => setSelectedMemoryId(id)}
+              />
+            )}
 
-          {activeWorkspace === 'synaptic' && (
-            <SynapticBrainWorkspace
-              experiment={experiment}
-              currentStep={currentStep}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
-          )}
+            {activeWorkspace === 'synaptic' && (
+              <SynapticBrainWorkspace
+                experiment={experiment}
+                currentStep={currentStep}
+                onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+              />
+            )}
 
-          {activeWorkspace === 'surgery' && (
-            <SurgeryWorkspace
-              experiment={experiment}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
-          )}
+            {activeWorkspace === 'surgery' && (
+              <SurgeryWorkspace
+                experiment={experiment}
+                onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+              />
+            )}
 
-          {activeWorkspace === 'collision' && (
-            <MemoryCollisionWorkspace />
-          )}
+            {activeWorkspace === 'collision' && (
+              <MemoryCollisionWorkspace />
+            )}
 
-          {activeWorkspace === 'observatory' && (
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%' }}>
-              <div style={{
-                display: 'flex',
-                gap: '0.5rem',
-                padding: '0.4rem 1.25rem',
-                background: 'rgba(15, 23, 42, 0.9)',
-                borderBottom: '1px solid rgba(51, 65, 85, 0.5)',
-                alignItems: 'center',
-              }}>
-                <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', fontWeight: 700 }}>
-                  Observatory Mode:
-                </span>
-                <button
-                  className={`preset-chip ${observatoryMode === 'studio' ? 'active' : ''}`}
-                  onClick={() => setObservatoryMode('studio')}
-                >
-                  ⚡ Adaptive Studio (Phase 19)
-                </button>
-                <button
-                  className={`preset-chip ${observatoryMode === 'overview' ? 'active' : ''}`}
-                  onClick={() => setObservatoryMode('overview')}
-                >
-                  ○ Classic Overview (Phase 13)
-                </button>
+            {activeWorkspace === 'observatory' && (
+              <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', height: '100%' }}>
+                <div style={{
+                  display: 'flex',
+                  gap: '0.5rem',
+                  padding: '0.4rem 1.25rem',
+                  background: 'rgba(15, 23, 42, 0.9)',
+                  borderBottom: '1px solid rgba(51, 65, 85, 0.5)',
+                  alignItems: 'center',
+                }}>
+                  <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#94a3b8', fontWeight: 700 }}>
+                    Observatory Mode:
+                  </span>
+                  <button
+                    className={`preset-chip ${observatoryMode === 'studio' ? 'active' : ''}`}
+                    onClick={() => setObservatoryMode('studio')}
+                  >
+                    ⚡ Adaptive Studio (Phase 19)
+                  </button>
+                  <button
+                    className={`preset-chip ${observatoryMode === 'overview' ? 'active' : ''}`}
+                    onClick={() => setObservatoryMode('overview')}
+                  >
+                    ○ Classic Overview (Phase 13)
+                  </button>
+                </div>
+
+                {observatoryMode === 'studio' ? (
+                  <ObservatoryStudioWorkspace />
+                ) : (
+                  <ObservatoryWorkspace
+                    experiment={experiment}
+                    currentStep={currentStep}
+                    onStepChange={setCurrentStep}
+                    onJumpToEvent={(idx) => {
+                      setCurrentStep(idx + 1)
+                      if (experiment?.events[idx]) {
+                        setLastModifiedMemoryId(experiment.events[idx].id)
+                      }
+                    }}
+                    isPlaying={isPlaying}
+                    onTogglePlay={() => setIsPlaying(!isPlaying)}
+                    onStepForward={() => {
+                      if (experiment) setCurrentStep((s) => Math.min(experiment.snapshots.length - 1, s + 1))
+                    }}
+                    onStepBackward={() => setCurrentStep((s) => Math.max(0, s - 1))}
+                    mapPoints={memoryMap?.points || []}
+                    graph={graph}
+                    selectedMemoryId={selectedMemoryId}
+                    onSelectMemory={setSelectedMemoryId}
+                    lastModifiedMemoryId={lastModifiedMemoryId}
+                    eventInspector={eventInspector}
+                    onLaunchDemo={handleLaunchDemo}
+                    onOpenCreateExperiment={() => setActiveWorkspace('lab')}
+                  />
+                )}
               </div>
+            )}
 
-              {observatoryMode === 'studio' ? (
-                <ObservatoryStudioWorkspace />
-              ) : (
-                <ObservatoryWorkspace
-                  experiment={experiment}
-                  currentStep={currentStep}
-                  onStepChange={setCurrentStep}
-                  onJumpToEvent={(idx) => {
-                    setCurrentStep(idx + 1)
-                    if (experiment?.events[idx]) {
-                      setLastModifiedMemoryId(experiment.events[idx].id)
-                    }
-                  }}
-                  isPlaying={isPlaying}
-                  onTogglePlay={() => setIsPlaying(!isPlaying)}
-                  onStepForward={() => {
-                    if (experiment) setCurrentStep((s) => Math.min(experiment.snapshots.length - 1, s + 1))
-                  }}
-                  onStepBackward={() => setCurrentStep((s) => Math.max(0, s - 1))}
-                  mapPoints={memoryMap?.points || []}
-                  graph={graph}
-                  selectedMemoryId={selectedMemoryId}
-                  onSelectMemory={setSelectedMemoryId}
-                  lastModifiedMemoryId={lastModifiedMemoryId}
-                  eventInspector={eventInspector}
-                  onLaunchDemo={handleLaunchDemo}
-                  onOpenCreateExperiment={() => setActiveWorkspace('lab')}
-                />
-              )}
-            </div>
-          )}
+            {activeWorkspace === 'lab' && (
+              <MemoryLabWorkspace
+                mechanisms={mechanisms}
+                onRunExperiment={handleRunNewExperiment}
+                isBusy={isBusy}
+              />
+            )}
 
-          {activeWorkspace === 'lab' && (
-            <MemoryLabWorkspace
-              mechanisms={mechanisms}
-              onRunExperiment={handleRunNewExperiment}
-              isBusy={isBusy}
-            />
-          )}
+            {activeWorkspace === 'xray' && (
+              <MemoryXRayWorkspace
+                experiment={experiment}
+                currentStep={currentStep}
+                onStepChange={setCurrentStep}
+                activationProfile={activationProfile}
+                sparsityAnalysis={sparsityAnalysis}
+                diagnostics={diagnostics}
+                anomalies={anomalies}
+                eventInspector={eventInspector}
+                memoryMap={memoryMap}
+                selectedMemoryId={selectedMemoryId}
+                onSelectMemory={setSelectedMemoryId}
+                onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+              />
+            )}
 
-          {activeWorkspace === 'xray' && (
-            <MemoryXRayWorkspace
-              experiment={experiment}
-              currentStep={currentStep}
-              onStepChange={setCurrentStep}
-              activationProfile={activationProfile}
-              sparsityAnalysis={sparsityAnalysis}
-              diagnostics={diagnostics}
-              anomalies={anomalies}
-              eventInspector={eventInspector}
-              memoryMap={memoryMap}
-              selectedMemoryId={selectedMemoryId}
-              onSelectMemory={setSelectedMemoryId}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
-          )}
+            {activeWorkspace === 'timeline' && (
+              <TimelineWorkspace
+                experiment={experiment}
+                currentStep={currentStep}
+                onStepChange={setCurrentStep}
+                selectedMemoryId={selectedMemoryId}
+                trace={selectedTrace}
+                heatmaps={heatmaps}
+                onSelectMemory={setSelectedMemoryId}
+                onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+              />
+            )}
 
-          {activeWorkspace === 'timeline' && (
-            <TimelineWorkspace
-              experiment={experiment}
-              currentStep={currentStep}
-              onStepChange={setCurrentStep}
-              selectedMemoryId={selectedMemoryId}
-              trace={selectedTrace}
-              heatmaps={heatmaps}
-              onSelectMemory={setSelectedMemoryId}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
-          )}
+            {activeWorkspace === 'map' && (
+              <MemoryMapWorkspace
+                experiment={experiment}
+                memoryMap={memoryMap}
+                graph={graph}
+                clusters={clusters}
+                interferenceRecords={interference}
+                selectedMemoryId={selectedMemoryId}
+                onSelectMemory={setSelectedMemoryId}
+                onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+              />
+            )}
 
-          {activeWorkspace === 'map' && (
-            <MemoryMapWorkspace
-              experiment={experiment}
-              memoryMap={memoryMap}
-              graph={graph}
-              clusters={clusters}
-              interferenceRecords={interference}
-              selectedMemoryId={selectedMemoryId}
-              onSelectMemory={setSelectedMemoryId}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
-          )}
+            {activeWorkspace === 'counterfactual' && (
+              <CounterfactualWorkspace
+                experiment={experiment}
+                counterfactuals={counterfactuals}
+                onCounterfactualCreated={handleCounterfactualCreated}
+                onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+              />
+            )}
 
-          {activeWorkspace === 'counterfactual' && (
-            <CounterfactualWorkspace
-              experiment={experiment}
-              counterfactuals={counterfactuals}
-              onCounterfactualCreated={handleCounterfactualCreated}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
-          )}
+            {activeWorkspace === 'experiments' && (
+              <ExperimentsWorkspace
+                currentExperiment={experiment}
+                experiments={experimentsList}
+                onSelectExperiment={loadExperiment}
+                onLaunchDemo={handleLaunchDemo}
+              />
+            )}
 
-          {activeWorkspace === 'experiments' && (
-            <ExperimentsWorkspace
-              currentExperiment={experiment}
-              experiments={experimentsList}
-              onSelectExperiment={loadExperiment}
-              onLaunchDemo={handleLaunchDemo}
-            />
-          )}
+            {activeWorkspace === 'reports' && (
+              <ReportsWorkspace
+                experiment={experiment}
+                onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+              />
+            )}
 
-          {activeWorkspace === 'reports' && (
-            <ReportsWorkspace
-              experiment={experiment}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
-          )}
+            {activeWorkspace === 'detective' && (
+              <MemoryDetectiveWorkspace />
+            )}
 
-          {activeWorkspace === 'detective' && (
-            <MemoryDetectiveWorkspace />
-          )}
+            {activeWorkspace === 'research' && (
+              <ResearchLabWorkspace />
+            )}
 
-          {activeWorkspace === 'research' && (
-            <ResearchLabWorkspace />
-          )}
+            {activeWorkspace === 'genome' && (
+              <GenomeWorkspace
+                experiment={experiment}
+                selectedMemoryId={selectedMemoryId}
+                onSelectMemory={setSelectedMemoryId}
+                onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+              />
+            )}
 
-          {activeWorkspace === 'genome' && (
-            <GenomeWorkspace
-              experiment={experiment}
-              selectedMemoryId={selectedMemoryId}
-              onSelectMemory={setSelectedMemoryId}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
-          )}
+            {activeWorkspace === 'agency' && (
+              <AgencyWorkspace />
+            )}
 
-          {activeWorkspace === 'agency' && (
-            <AgencyWorkspace />
-          )}
+            {activeWorkspace === 'causal' && (
+              <CausalWorkspace
+                experiment={experiment}
+                onViewEvidence={(title, details) => setEvidenceData({ title, details })}
+              />
+            )}
 
-          {activeWorkspace === 'causal' && (
-            <CausalWorkspace
-              experiment={experiment}
-              onViewEvidence={(title, details) => setEvidenceData({ title, details })}
-            />
-          )}
+            {activeWorkspace === 'studio' && (
+              <ExperimentStudioWorkspace
+                onNavigateToWorkspace={(ws) => setActiveWorkspace(ws as WorkspaceId)}
+              />
+            )}
 
-          {activeWorkspace === 'studio' && (
-            <ExperimentStudioWorkspace
-              onNavigateToWorkspace={(ws) => setActiveWorkspace(ws as WorkspaceId)}
-            />
-          )}
-
-          {activeWorkspace === 'evidence' && (
-            <ScientificResearchWorkspace
-              onNavigateWorkspace={(ws) => setActiveWorkspace(ws as WorkspaceId)}
-            />
-          )}
+            {activeWorkspace === 'evidence' && (
+              <ScientificResearchWorkspace
+                onNavigateWorkspace={(ws) => setActiveWorkspace(ws as WorkspaceId)}
+              />
+            )}
+          </ErrorBoundary>
         </main>
       </div>
 
