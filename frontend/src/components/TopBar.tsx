@@ -14,6 +14,7 @@ interface TopBarProps {
   selectedMemoryId?: string | null
   isFollowingMemory?: boolean
   onToggleFollowMemory?: () => void
+  onNavigate?: (area: 'observatory' | 'substrate' | 'evaluation' | 'research') => void
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -29,6 +30,7 @@ export const TopBar: React.FC<TopBarProps> = ({
   selectedMemoryId,
   isFollowingMemory = true,
   onToggleFollowMemory,
+  onNavigate,
 }) => {
   const mechanism = currentExperiment?.mechanism?.toUpperCase() || null
   const dim = currentExperiment?.task?.d || null
@@ -39,62 +41,68 @@ export const TopBar: React.FC<TopBarProps> = ({
       {/* ── Brand ── */}
       <div className="topbar-left">
         <div className="brand">
-          <div className="brand-icon-box">
-            <span className="brand-glyph">◈</span>
-          </div>
-          <div className="brand-text-block">
-            <span className="brand-wordmark">NEURAL ARCHAEOLOGY</span>
-            <span className="brand-tagline">RESEARCH INSTRUMENT</span>
-          </div>
+          <span className="brand-wordmark">Neural Archaeology</span>
+          <span className="brand-tagline">scientific instrument</span>
         </div>
 
-        <div className="topbar-status-pill">
+        <div className="topbar-status">
           <span className={`status-led ${isBusy ? 'busy' : 'live'}`} />
-          <span className="status-text">{isBusy ? 'COMPUTING' : 'SUBSTRATE READY'}</span>
+          <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: '0.04em' }}>
+            {isBusy ? 'COMPUTING' : 'READY'}
+          </span>
         </div>
       </div>
 
       {/* ── Research Context (center) ── */}
       <div className="topbar-center">
         {currentExperiment ? (
-          <div className="topbar-context-strip">
-            <span className="context-pill exp-pill">
-              <span className="pill-k">EXP</span>
-              <span className="pill-v">{currentExperiment.experiment_id.slice(0, 8)}</span>
+          <div className="topbar-context" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="mono-badge cyan">
+              EXP: {currentExperiment.experiment_id.slice(0, 8)}
             </span>
             {mechanism && (
-              <span className="context-pill mech-pill">
-                <span className="pill-k">MECH</span>
-                <span className="pill-v">{mechanism}</span>
+              <span className="mono-badge violet">
+                {mechanism}
               </span>
             )}
             {dim && (
-              <span className="context-pill dim-pill">
-                <span className="pill-k">DIM</span>
-                <span className="pill-v">{dim}D</span>
+              <span className="mono-badge">
+                {dim}D
               </span>
             )}
             {numEvents > 0 && (
-              <span className="context-pill evt-pill">
-                <span className="pill-k">EVT</span>
-                <span className="pill-v">{numEvents}</span>
+              <span className="mono-badge">
+                {numEvents} EVT
               </span>
             )}
           </div>
         ) : (
-          <span className="topbar-empty-context">
-            NO ACTIVE EXPERIMENT LOADED
+          <span className="topbar-context" style={{ fontStyle: 'italic', opacity: 0.5 }}>
+            No experiment loaded
           </span>
         )}
       </div>
 
       {/* ── Actions (right) ── */}
       <div className="topbar-right">
+        {onNavigate && (
+          <nav className="primary-areas" aria-label="Primary areas">
+            <button className="primary-area active" onClick={() => onNavigate('observatory')}>Observatory</button>
+            <button className="primary-area" onClick={() => onNavigate('substrate')}>Substrate</button>
+            <button className="primary-area" onClick={() => onNavigate('evaluation')}>Evaluation</button>
+            <button className="primary-area" onClick={() => onNavigate('research')}>Research</button>
+          </nav>
+        )}
+
         {/* Global Memory Selector & Follow Badge */}
         {selectedMemoryId && (
           <div className="topbar-memory-pill">
-            <span className="memory-pill-label">INSPECT</span>
-            <span className="memory-pill-val">{selectedMemoryId.slice(0, 14)}</span>
+            <span style={{ fontSize: '9px', color: 'var(--text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>
+              INSPECT:
+            </span>
+            <span style={{ fontFamily: 'var(--font-mono)', color: 'var(--accent)', fontWeight: 700, fontSize: '11px' }}>
+              {selectedMemoryId}
+            </span>
             {onToggleFollowMemory && (
               <button
                 className={`topbar-follow-toggle ${isFollowingMemory ? 'active' : ''}`}
@@ -102,15 +110,15 @@ export const TopBar: React.FC<TopBarProps> = ({
                 title="Toggle 'Follow This Memory' mode across all tools"
               >
                 <span>{isFollowingMemory ? '★' : '☆'}</span>
-                <span>{isFollowingMemory ? 'FOLLOW' : 'LOCK'}</span>
+                <span>{isFollowingMemory ? 'FOLLOW' : 'UNLOCKED'}</span>
               </button>
             )}
           </div>
         )}
 
-        {/* Experiment selector dropdown */}
+        {/* Experiment selector — compact */}
         {experiments.length > 0 && (
-          <div className="exp-selector-box">
+          <div className="exp-selector">
             <select
               className="exp-select"
               value={currentExperiment?.experiment_id || ''}
@@ -137,29 +145,33 @@ export const TopBar: React.FC<TopBarProps> = ({
           </div>
         )}
 
-        {/* Judge Mode Tour Trigger */}
         {onOpenJudgeMode && (
           <button
-            className="topbar-judge-pill-btn"
+            className="topbar-btn"
             onClick={onOpenJudgeMode}
             title="Launch 2-minute Judge Mode evaluation tour (J)"
+            style={{
+              background: 'rgba(245, 158, 11, 0.15)',
+              borderColor: 'rgba(245, 158, 11, 0.4)',
+              color: '#fbbf24',
+              fontWeight: 700,
+            }}
           >
             ★ JUDGE MODE
           </button>
         )}
 
-        {/* Action Controls */}
         <button
-          className="topbar-pill-btn btn-primary"
+          className="topbar-btn btn-primary"
           onClick={onLaunchDemo}
           disabled={isBusy}
           title="Launch canonical demo experiment"
         >
-          ▶ Demo
+          ▶ Run Experiment
         </button>
 
         <button
-          className="topbar-pill-btn btn-secondary"
+          className="topbar-btn"
           onClick={onReplay}
           disabled={isBusy || !currentExperiment}
           title="Re-execute state sequence"
@@ -168,7 +180,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
 
         <button
-          className="topbar-icon-pill"
+          className="topbar-btn btn-ghost"
           onClick={onOpenCommandPalette}
           title="Command palette (Ctrl/Cmd + K)"
           aria-label="Command palette"
@@ -177,7 +189,7 @@ export const TopBar: React.FC<TopBarProps> = ({
         </button>
 
         <button
-          className="topbar-icon-pill"
+          className="topbar-btn btn-ghost"
           onClick={onOpenShortcuts}
           title="Keyboard shortcuts (?)"
           aria-label="Keyboard shortcuts"

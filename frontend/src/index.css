@@ -296,6 +296,31 @@ select { cursor: pointer; }
   overflow: hidden;
 }
 
+.primary-areas {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 8px;
+}
+
+.primary-area {
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  padding: 6px 7px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.primary-area:hover,
+.primary-area.active {
+  color: var(--accent);
+  border-color: var(--border-subtle);
+}
+
 .main-canvas {
   flex: 1;
   height: 100%;
